@@ -8,27 +8,23 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.0] 다크/라이트 모드 완벽 대응 CSS!
+# 🎨 [디자인 정밀 광택 2.1] 상단 잘림 버그 해결 & 다크/라이트 모드 대응
 # =====================================================================
 st.markdown("""
     <style>
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
     
-    /* 전체 레이아웃 여백 깎기 */
-    div.block-container {
-        padding-top: 1rem;
-        padding-bottom: 0rem;
-    }
+    /* 🚨 아까 위에 버튼을 잘라먹었던 몹쓸 여백 코드는 삭제했음! 이제 안전함! */
 
-    /* 📱 카톡 프로필 카드 (다크모드/라이트모드 글씨 안 보임 현상 완벽 해결!) */
+    /* 📱 카톡 프로필 카드 */
     .profile-card {
         border: 1px solid var(--faded-text40);
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 12px;
-        background-color: var(--secondary-background-color); /* 기기 테마에 맞춰 알아서 변함! */
-        color: var(--text-color); /* 글씨 색깔도 알아서 변함! */
+        background-color: var(--secondary-background-color); 
+        color: var(--text-color); 
         transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         align-items: center;
@@ -44,8 +40,8 @@ st.markdown("""
     .profile-img {
         width: 60px;
         height: 60px;
-        background-color: #f7e600; /* 카톡 노란색 */
-        color: black; /* 이모지는 무조건 까맣게 보여야 함 */
+        background-color: #f7e600; 
+        color: black; 
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -66,7 +62,7 @@ st.markdown("""
     .profile-desc {
         font-size: 13px;
         color: var(--text-color);
-        opacity: 0.7; /* 살짝 투명하게 해서 고급지게 */
+        opacity: 0.7; 
         line-height: 1.2;
     }
 
@@ -284,9 +280,14 @@ elif st.session_state.page == "chat_winter":
             
     st.divider()
 
+    # 🚨 파이 디렉터님의 극대노를 부른 바로 그곳... 역사관 100% 원상복구!!!
     with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
         with st.container(height=250):
             st.markdown("""
+            **[ v2.1.2 ] 2026.03.30 (월)**
+            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 디렉터님의 요청에 따라 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
+
+            ---
             **[ v2.1.1 ] 2026.03.30 (월)**
             * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
 
@@ -300,7 +301,41 @@ elif st.session_state.page == "chat_winter":
             
             ---
             **[ v1.8.2 ] 2026.03.30 (월)**
-            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약' 화면을 모든 유저에게 개방했습니다! 
+            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
+            
+            ---
+            **[ v1.8.1 ] 2026.03.30 (월)**
+            * **[20:15] 🧠 자동 롤링 메모리 버그 수정:** 대화 카운터(만보기)를 도입하여, 유저가 정확히 10번(20문장) 대화할 때마다 백그라운드에서 자동으로 과거 기억을 요약 압축합니다. 
+            
+            ---
+            **[ v1.7.0 ] 2026.03.30 (월)**
+            * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
+            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
+            
+            ---
+            **[ v1.6.0 ] 2026.03.30 (월)**
+            * **[08:35] 🧠 장기 기억 압축 (Core Memory):** 대화 내용을 요약 압축하여 영구 보존하는 AI 엔진 탑재!
+            
+            ---
+            **[ v1.5.0 ] 2026.03.30 (월)**
+            * **[08:20] 🎒 인벤토리 시스템:** 유저가 준 선물을 영구적으로 기억하고 사이드바에 보관합니다.
+            
+            ---
+            **[ v1.4.0 ] 2026.03.30 (월)**
+            * **[07:45] 몰입도 UI 패치:** 로딩 스피너 및 메시지 전송 알림창 추가
+            * **[00:30] 대형 CG 패치 & 다이내믹 씬:** 문맥에 따른 일러스트 자동 변동
+            
+            ---
+            **[ v1.2.0 ] 2026.03.29 (일)**
+            * **[22:00] 호감도(Affection) 시스템 적용:** 유저의 대화 선택지에 따라 호감도 실시간 변동
+            
+            ---
+            **[ v1.1.0 ] 2026.03.29 (일)**
+            * **[21:00] 3D VR 엔진 서버 이식:** 게임 엔진 통신을 위한 백엔드 구조 개편
+            
+            ---
+            **[ v1.0.0 ] 2026.03.29 (일)**
+            * **[18:00] 멀티 유저 & 영구 기억력(DB) 구축:** 수파베이스 연동 완료 및 라이브 베타 테스트 시작!
             """)
 
     for role, text in st.session_state.chat_history:
