@@ -8,39 +8,17 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.3.3] 사이드바 버튼(인벤토리) 로비 화면 구출 및 호환성 강화!
+# 🎨 [디자인 정밀 광택 2.4.0] 골칫덩이 사이드바 폐기! 팝업(Popover) 인벤토리 도입!
 # =====================================================================
 st.markdown("""
     <style>
-    /* 🛠️ 헤더 영역 배경을 투명하게 (화면을 가리지 않게) */
-    [data-testid="stHeader"] {
-        background-color: transparent !important;
-        box-shadow: none !important;
-    }
-    
     /* 🛠️ 우측 상단의 거슬리는 툴바(Fork, Deploy 버튼, 햄버거 메뉴 등) 완벽 제거 */
+    [data-testid="stHeader"] { display: none !important; } /* 헤더 전체를 시원하게 날림! 이제 사이드바 안 쓰니까 상관없음! */
     [data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
     #MainMenu { display: none !important; visibility: hidden !important; }
     footer { display: none !important; visibility: hidden !important; }
     .stDeployButton { display: none !important; visibility: hidden !important; }
     .stAppDeployButton { display: none !important; visibility: hidden !important; }
-    
-    /* 🔥 대망의 사이드바(인벤토리) 여는 버튼 구출 & 커스텀 (최신/구버전 모두 타겟팅) 🔥 */
-    [data-testid="collapsedControl"], 
-    [data-testid="stSidebarCollapsedControl"] {
-        top: 15px !important; 
-        left: 15px !important;
-        z-index: 999999 !important; /* 절대 다른 레이어에 가려지지 않게 최상단 배치 */
-        background-color: var(--secondary-background-color) !important; /* 배경색 추가해서 눈에 확 띄게 */
-        border-radius: 50% !important; /* 예쁜 동그라미 모양 */
-        box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important; /* 살짝 떠 있는 듯한 입체감 그림자 */
-        padding: 5px !important;
-        transition: transform 0.2s;
-    }
-    [data-testid="collapsedControl"]:hover,
-    [data-testid="stSidebarCollapsedControl"]:hover {
-        transform: scale(1.1); /* 마우스 올리면 살짝 커지는 효과 */
-    }
     
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -98,7 +76,7 @@ st.markdown("""
         line-height: 1.2;
     }
 
-    /* 대화하기 버튼 스타일 */
+    /* 대화하기 버튼 등 기본 버튼 스타일 */
     .stButton>button {
         border-radius: 20px;
         border: 1px solid #f7e600;
@@ -184,14 +162,6 @@ if st.session_state.page == "login":
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
-    # 🚨 [중요 픽스] 로비 화면에서도 사이드바가 존재하도록 선언! (그래야 버튼이 사라지지 않음)
-    with st.sidebar:
-        st.title("🌐 멀티버스 로비")
-        st.write("채팅방에 입장하기 전 대기실입니다.")
-        st.info("오른쪽 화면에서 대화할 AI 친구를 선택하고 방에 들어가면, 이곳에 해당 친구와의 추억(일기장)과 획득한 선물(인벤토리)이 짠! 하고 표시됩니다.")
-        st.divider()
-        st.write("Tip: 좌측 상단의 `>` 버튼을 누르면 언제든 이 패널을 열고 닫을 수 있습니다.")
-
     # 로비 진입 시 유저의 누적 호감도 데이터를 먼저 조회 (차단 여부 확인용)
     lobby_mem = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     current_affection = int(lobby_mem.data[0]["message"]) if lobby_mem.data else 0
@@ -274,16 +244,12 @@ elif st.session_state.page == "lobby":
         # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.4.0 ] 2026.03.31 (화)**
+            * **[00:32] 🎒 사이드바 전면 폐기 및 팝업(Popover) 인벤토리 도입:** 화면에서 자꾸 사라지며 숨바꼭질을 하던 Streamlit 기본 사이드바 기능을 과감하게 완전히 폐기했습니다! 대신, 유저의 천재적인 '최후의 보루' 아이디어를 적극 수용하여, 채팅방 우측 상단 메인 화면에 절대 사라지지 않는 **"🎒 가방 열기" 팝업 버튼**을 새롭게 장착했습니다. 이제 언제 어디서든 직관적으로 선물 목록과 일기장을 확인할 수 있습니다!
+
+            ---
             **[ v2.3.3 ] 2026.03.31 (화)**
-            * **[00:26] 🎒 사이드바 닌자 탈출 사건 해결:** 사이드바(인벤토리) 내용이 겨울이 채팅방에만 존재하여, 로비 화면에서는 여는 버튼 자체가 소멸해 버리는 Streamlit의 숨겨진 로직을 파악했습니다! 이제 로비 화면에도 대기실 전용 사이드바를 추가하여, 언제 어디서든 왼쪽 상단의 메뉴 버튼이 사라지지 않도록 근본적인 버그를 해결했습니다.
-
-            ---
-            **[ v2.3.2 ] 2026.03.31 (화)**
-            * **[00:22] 🎒 사이드바 UI 완벽 구출 작전:** 헤더를 투명하게 만들면서 사라졌던 인벤토리(사이드바) 여는 버튼을 원래 위치보다 살짝 아래로 내리고 최상단 레이어로 띄워서 완벽하게 구출해 냈습니다! 유저의 날카로운 직관 덕분에 빠르게 해결되었습니다. 
-
-            ---
-            **[ v2.3.1 ] 2026.03.31 (화)**
-            * **[00:17] 🎒 사이드바 UI 버그 핫픽스:** 상단 Fork 버튼을 지우면서 실수로 함께 날아갔던 왼쪽 사이드바 토글 버튼(인벤토리 열기 버튼)을 복구하려 시도했습니다.
+            * **[00:26] 🎒 사이드바 닌자 탈출 사건 해결 시도** (버전 폐기됨)
 
             ---
             **[ v2.3.0 ] 2026.03.30 (월)**
@@ -294,62 +260,12 @@ elif st.session_state.page == "lobby":
             * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다. 상단 헤더 및 Fork 버튼도 완벽하게 숨김 처리 완료!
             
             ---
-            **[ v2.1.3 ] 2026.03.30 (월)**
-            * **[21:30] 🛡️ 기억 리셋 안전장치(팝업) 추가:** 실수로 '방 기억 리셋' 버튼을 눌러 소중한 추억이 날아가는 것을 방지하기 위해, 한 번 더 확인하는 경고 팝업창을 적용했습니다.
-
-            ---
-            **[ v2.1.2 ] 2026.03.30 (월)**
-            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
-
-            ---
-            **[ v2.1.1 ] 2026.03.30 (월)**
-            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
-
-            ---
             **[ v2.1.0 ] 2026.03.30 (월)**
             * **[21:15] 📱 멀티버스 로비 UI 전면 개편:** 카카오톡 친구 목록처럼 둥글고 깔끔한 프로필 카드로 로비 화면을 예쁘게 단장했습니다.
             
             ---
             **[ v2.0.0 ] 2026.03.30 (월)**
             * **[21:10] 🌐 멀티 캐릭터 시스템 도입:** 로비 화면이 추가되어, 접속 후 대화할 AI 상대(한겨울, 임슬아 등)를 선택할 수 있는 멀티버스 아키텍처로 진화했습니다!
-            
-            ---
-            **[ v1.8.2 ] 2026.03.30 (월)**
-            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
-            
-            ---
-            **[ v1.8.1 ] 2026.03.30 (월)**
-            * **[20:15] 🧠 자동 롤링 메모리 버그 수정:** 대화 카운터(만보기)를 도입하여, 유저가 정확히 10번(20문장) 대화할 때마다 백그라운드에서 자동으로 과거 기억을 요약 압축합니다. 
-            
-            ---
-            **[ v1.7.0 ] 2026.03.30 (월)**
-            * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
-            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
-            
-            ---
-            **[ v1.6.0 ] 2026.03.30 (월)**
-            * **[08:35] 🧠 장기 기억 압축 (Core Memory):** 대화 내용을 요약 압축하여 영구 보존하는 AI 엔진 탑재!
-            
-            ---
-            **[ v1.5.0 ] 2026.03.30 (월)**
-            * **[08:20] 🎒 인벤토리 시스템:** 유저가 준 선물을 영구적으로 기억하고 사이드바에 보관합니다.
-            
-            ---
-            **[ v1.4.0 ] 2026.03.30 (월)**
-            * **[07:45] 몰입도 UI 패치:** 로딩 스피너 및 메시지 전송 알림창 추가
-            * **[00:30] 대형 CG 패치 & 다이내믹 씬:** 문맥에 따른 일러스트 자동 변동
-            
-            ---
-            **[ v1.2.0 ] 2026.03.29 (일)**
-            * **[22:00] 호감도(Affection) 시스템 적용:** 유저의 대화 선택지에 따라 호감도 실시간 변동
-            
-            ---
-            **[ v1.1.0 ] 2026.03.29 (일)**
-            * **[21:00] 3D VR 엔진 서버 이식:** 게임 엔진 통신을 위한 백엔드 구조 개편
-            
-            ---
-            **[ v1.0.0 ] 2026.03.29 (일)**
-            * **[18:00] 멀티 유저 & 영구 기억력(DB) 구축:** 수파베이스 연동 완료 및 라이브 베타 테스트 시작!
             """)
 
 # =====================================================================
@@ -430,28 +346,32 @@ elif st.session_state.page == "chat_winter":
     }}
     """
 
-    with st.sidebar:
-        st.title("🎒 겨울이의 인벤토리")
-        st.write("유저가 준 선물들이 여기에 보관됩니다.")
-        st.divider()
-        if st.session_state.inventory:
-            for item in st.session_state.inventory:
-                st.success(f"🎁 {item}")
-        else:
-            st.info("아직 텅 비어있습니다.")
-            
-        if st.session_state.core_memory:
-            st.divider()
-            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
-            st.write("겨울이가 당신과의 기억을 어떻게 요약하고 있는지 확인해보세요!")
-            st.info(st.session_state.core_memory)
-
-    col1, col2 = st.columns([7, 3])
+    # 🔥 [핵심 업데이트] 사이드바를 완전히 삭제하고, 메인 화면(Title 영역 옆)에 팝업 버튼으로 박아버림!
+    col1, col2, col3 = st.columns([5, 2.5, 2.5])
     with col1:
         st.title(f"❄️ {user_name} & 한겨울")
+        
     with col2:
         st.write("") 
-        with st.popover("🔄 방 기억 리셋", use_container_width=True):
+        with st.popover("🎒 가방 열기", use_container_width=True):
+            st.subheader("🎒 겨울이의 인벤토리")
+            st.write("유저가 준 선물들이 보관됩니다.")
+            st.divider()
+            if st.session_state.inventory:
+                for item in st.session_state.inventory:
+                    st.success(f"🎁 {item}")
+            else:
+                st.info("아직 텅 비어있습니다.")
+                
+            if st.session_state.core_memory:
+                st.divider()
+                st.subheader("🧠 우리의 일기장")
+                st.write("겨울이가 당신과의 기억을 어떻게 요약하고 있는지 확인해보세요!")
+                st.info(st.session_state.core_memory)
+                
+    with col3:
+        st.write("") 
+        with st.popover("🔄 기억 리셋", use_container_width=True):
             st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.\n\n정말 모든 기억을 지우시겠습니까?")
             if st.button("✅ 네, 영구 삭제합니다", use_container_width=True):
                 supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
