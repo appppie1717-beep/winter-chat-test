@@ -8,15 +8,20 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 전역 CSS 스타일 (로비 및 기본 UI 세팅)
+# 🎨 [디자인 정밀 광택 2.8] 햄버거 버튼 부활 & 쓸데없는 우측 메뉴만 제거!
 # =====================================================================
 st.markdown("""
     <style>
-    /* 우측 상단 Fork 버튼 및 Streamlit 기본 헤더 완벽 제거 */
-    [data-testid="stHeader"] {display: none;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display:none;}
+    /* 🚨 [NEW] 전체 헤더를 날리지 않고, Fork 및 우측 툴바 메뉴만 쏙 골라서 제거! */
+    [data-testid="stToolbar"] {visibility: hidden !important;}
+    .stDeployButton {display: none !important;}
+    #MainMenu {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    
+    /* 본문 상단 여백 깔끔하게 정리 (이제 고정 헤더 없으니 기본값으로) */
+    .block-container {
+        padding-top: 3rem !important;
+    }
     
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -239,8 +244,12 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v2.8.0 ] 2026.03.31 (화)**
+            * **[00:10] 📱 메뉴 사이드바 통합 & 열기 버그 픽스:** 캔버스 샌드박스에서 오류를 뿜던 상단 고정 헤더를 과감히 버리고, 모바일 환경에 가장 최적화된 **좌측 사이드바(인벤토리)** 안으로 로비 버튼, 기억 리셋, 호감도 바를 모두 편입시켰습니다! 또한 사이드바를 닫으면 다시 안 열리던 치명적 버그를 완벽하게 고쳤습니다!
+
+            ---
             **[ v2.7.0 ] 2026.03.31 (화)**
-            * **[00:00] 🏆 찐 상단 고정 헤더 완벽 구현:** 캔버스 모드의 샌드박스 제한을 우회하여 순서 기반(nth-child) 렌더링 절대 고정 방식을 적용했습니다! 이제 어떤 환경에서든 스크롤 마비 없이 호감도 바와 버튼들이 화면 최상단에 철벽처럼 고정됩니다. 역대 패치 노트 역사관도 단 한 줄의 누락 없이 전부 복원 완료!
+            * **[00:00] 🏆 찐 상단 고정 헤더 완벽 구현 시도:** 캔버스 모드 대응 테스트 (버그 발생).
 
             ---
             **[ v2.6.0 ] 2026.03.30 (월)**
@@ -326,34 +335,7 @@ elif st.session_state.page == "lobby":
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # 🚨 [NEW] 캔버스 환경 완벽 대응: 렌더링 순서(nth-child) 기반 절대 고정 CSS
-    st.markdown("""
-    <style>
-    /* 스트림릿의 메인 블록 안에서 '세 번째'로 렌더링되는 요소(= 우리의 헤더 컨테이너)를 
-       무조건 화면 꼭대기에 고정시킵니다. 어떤 환경에서도 마비되지 않는 100% 무식하고 확실한 방법! 
-    */
-    [data-testid="block-container"] > div:first-child > div:nth-child(3) {
-        position: fixed !important;
-        top: 0 !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 100% !important;
-        max-width: 46rem !important; /* PC/모바일 너비 자동 대응 */
-        background-color: var(--secondary-background-color) !important;
-        z-index: 999999 !important;
-        padding: 1.5rem 1rem 0.5rem 1rem !important;
-        border-bottom: 2px solid var(--faded-text40) !important;
-        border-radius: 0 0 15px 15px !important;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    /* 헤더가 고정되면서 본문을 가리지 않도록 넉넉한 윗 여백 확보 */
-    [data-testid="block-container"] {
-        padding-top: 200px !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
+    # DB 초기화 및 조회
     if "turn_count" not in st.session_state:
         st.session_state.turn_count = 0
 
@@ -386,19 +368,26 @@ elif st.session_state.page == "chat_winter":
 
     affection_score = st.session_state.affection
     
-    # 🚨 이 컨테이너가 바로 CSS가 지정한 '세 번째' 요소가 되어 무조건 상단에 고정됩니다!
-    header_container = st.container()
-    with header_container:
-        col1, col2, col3 = st.columns([2.5, 5, 2.5])
+    # 🚨 [NEW] 네 아이디어 적용! 햄버거 메뉴(사이드바) 안에 핵심 컨트롤을 다 몰아넣었어!
+    with st.sidebar:
+        st.title("⚙️ 겨울이 방 메뉴")
+        
+        # 1. 호감도 게이지바 (제일 위에 배치해서 언제든 확인 가능!)
+        progress_val = max(0, min(affection_score, 100)) 
+        st.markdown(f"💖 **현재 호감도: {affection_score} / 100**")
+        st.progress(progress_val / 100.0)
+        
+        st.divider()
+        
+        # 2. 로비로 가기 & 리셋 버튼 (가로로 예쁘게 배치)
+        col1, col2 = st.columns(2)
         with col1:
             if st.button("🔙 로비로", use_container_width=True):
                 st.session_state.page = "lobby"
                 st.rerun()
         with col2:
-            st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; margin-top:5px;'>❄️ 겨울이 방</div>", unsafe_allow_html=True)
-        with col3:
             with st.popover("🔄 리셋", use_container_width=True):
-                st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.\n\n정말 모든 기억을 지우시겠습니까?")
+                st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.")
                 if st.button("✅ 영구 삭제", use_container_width=True):
                     supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
                     st.session_state.pop("chat_history", None)
@@ -407,11 +396,27 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.pop("affection", None)
                     st.rerun()
                     
-        progress_val = max(0, min(affection_score, 100)) 
-        st.markdown(f"<div style='font-size:14px; margin-bottom:5px; margin-top:10px; font-weight:bold; color:var(--text-color);'>💖 현재 겨울이와의 호감도: {affection_score} / 100</div>", unsafe_allow_html=True)
-        st.progress(progress_val / 100.0)
+        st.divider()
 
-    # --- 여기서부터는 스크롤이 시원하게 내려가는 메인 채팅 공간 ---
+        # 3. 기존 인벤토리 & 코어 메모리
+        st.title("🎒 겨울이의 인벤토리")
+        st.write("유저가 준 선물들이 여기에 보관됩니다.")
+        if st.session_state.inventory:
+            for item in st.session_state.inventory:
+                st.success(f"🎁 {item}")
+        else:
+            st.info("아직 텅 비어있습니다.")
+            
+        if st.session_state.core_memory:
+            st.divider()
+            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
+            st.info(st.session_state.core_memory)
+
+    # --- 메인 화면 (채팅만 집중할 수 있게 완전 깔끔해짐!) ---
+    st.title(f"❄️ {user_name} & 한겨울")
+    st.caption("좌측 상단의 [>] 버튼을 눌러 호감도와 인벤토리를 확인하세요!")
+    st.divider()
+
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
@@ -445,21 +450,6 @@ elif st.session_state.page == "chat_winter":
         "대사": "실제로 할 대사"
     }}
     """
-
-    with st.sidebar:
-        st.title("🎒 겨울이의 인벤토리")
-        st.write("유저가 준 선물들이 여기에 보관됩니다.")
-        st.divider()
-        if st.session_state.inventory:
-            for item in st.session_state.inventory:
-                st.success(f"🎁 {item}")
-        else:
-            st.info("아직 텅 비어있습니다.")
-            
-        if st.session_state.core_memory:
-            st.divider()
-            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
-            st.info(st.session_state.core_memory)
 
     for role, text in st.session_state.chat_history:
         if role == "user":
