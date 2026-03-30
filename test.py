@@ -15,7 +15,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 💡 [이미지 경로 자동화 마술]
+# 💡 [이미지 경로 자동화]
 YOUR_GITHUB_ID = "appppie1717-beep"
 
 try:
@@ -65,7 +65,11 @@ if "user_name" not in st.session_state:
 else:
     user_name = st.session_state.user_name
 
-    # 🚨 [DB 로딩 최적화] 터짐 방지를 위해 무조건 최근 50개만 가져오기!
+    # 🚨 [턴 카운터 추가] 유저가 몇 번 말했는지 세는 카운터!
+    if "turn_count" not in st.session_state:
+        st.session_state.turn_count = 0
+
+    # 🚨 DB 데이터 불러오기 (UI 최적화: 최근 50개)
     if "chat_history" not in st.session_state or "inventory" not in st.session_state:
         response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(50).execute()
         db_history = reversed(response.data)
@@ -92,7 +96,7 @@ else:
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
-    # 🚨 [프롬프트 대수술] 19금, 스토킹 원천 차단 가드레일 + 핵심 기억 주입!
+    # 🚨 [프롬프트] 19금 가드레일 + 핵심 기억 주입!
     winter_persona = f"""
     너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야.
     내 닉네임은 '{user_name}'이야. 
@@ -126,37 +130,6 @@ else:
         else:
             st.info("아직 텅 비어있습니다.")
             
-        # 👑 [기억 압축 버튼] 파이 전용!
-        if user_name == "파이":
-            st.divider()
-            st.write("👑 시스템 관리자 메뉴")
-            if st.button("🧠 과거 기억 압축 (요약하기)"):
-                with st.spinner("AI가 그동안의 대화를 요약 중입니다..."):
-                    history_text = ""
-                    for r, t in st.session_state.chat_history:
-                        if r == "user":
-                            history_text += f"유저: {t}\n"
-                        else:
-                            try:
-                                d = json.loads(t)
-                                history_text += f"겨울: {d.get('대사', '')}\n"
-                            except:
-                                history_text += f"겨울: {t}\n"
-                    
-                    summary_prompt = f"다음은 유저 '{user_name}'와 한겨울의 대화 기록이야. 이 대화에서 있었던 둘 사이의 중요 사건, 감정 변화, 핵심 정보만 3줄로 요약해줘.\n\n{history_text}"
-                    
-                    summary_response = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=summary_prompt,
-                    )
-                    
-                    supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
-                    supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
-                    
-                    st.session_state.core_memory = summary_response.text
-                    st.toast("코어 메모리 압축 및 저장 완료!", icon="🧠")
-                    st.rerun()
-
         if st.session_state.core_memory:
             st.divider()
             st.write("🧠 **현재 핵심 기억**")
@@ -177,17 +150,9 @@ else:
     with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
         with st.container(height=250):
             st.markdown("""
-            **[ v1.7.0 ] 2026.03.30 (월)**
-            * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
-            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
-            * **[19:10] 🧠 장기 기억 압축 (Core Memory) 복구:** 파이 관리자 전용으로, 과거의 기억을 3줄로 요약해 영구 주입하는 버튼이 정상 작동합니다.
-            
-            ---
-            **[ v1.5.0 ] 2026.03.30 (월)**
-            * **[08:20] 🎒 인벤토리 시스템:** 유저가 준 선물을 영구적으로 기억하고 사이드바에 보관합니다.
-            * **[08:20] 🧠 기억 압축 엔진:** 데이터 폭발을 막기 위해 최근 20개 대화만 유지하는 슬라이딩 윈도우 기법 적용!
-            * **[07:45] 몰입도 UI 패치:** 로딩 스피너 및 전송 알림창(Toast) 추가
-            * **[00:30] 대형 CG 패치:** 말풍선 내 대형 일러스트 출력 그래픽 업그레이드
+            **[ v1.8.0 ] 2026.03.30 (월)**
+            * **[19:55] 🧠 오토 코어 메모리 (자동 기억 압축):** 대화가 20개(10턴) 쌓일 때마다 AI가 백그라운드에서 자동으로 유저와의 추억을 3줄로 요약하여 장기 기억(DB)으로 넘깁니다! 이제 겨울이는 당신을 절대 잊지 않습니다.
+            * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹 등 불건전한 대화 시 봇이 강력하게 철벽을 치는 윤리 필터가 적용되었습니다.
             """)
 
     for role, text in st.session_state.chat_history:
@@ -196,98 +161,9 @@ else:
                 st.markdown(text)
         else:
             try:
-                # 🚨 과거의 꼬인 데이터도 안전하게 열리도록 예외처리 강화
                 clean_text = text.strip()
-                if clean_text.startswith("```json"):
-                    clean_text = clean_text[7:]
-                if clean_text.endswith("```"):
-                    clean_text = clean_text[:-3]
-                clean_text = clean_text.strip()
-                
-                data = json.loads(clean_text)
-                scene = data.get('장면', '기본')
-                img_path = scene_images.get(scene, scene_images["기본"])
-                
-                with st.chat_message("assistant", avatar="❄️"):
-                    st.image(img_path, width=350) 
-                    score = int(data.get('호감도변화', 0))
-                    heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
-            except:
-                with st.chat_message("assistant", avatar="❄️"):
-                    st.markdown(text)
-
-    if user_input := st.chat_input("겨울이에게 메시지 보내기"):
-        st.toast('겨울이가 당신의 메시지를 읽고 고민 중입니다...', icon='👀')
-        
-        with st.chat_message("user"):
-            st.markdown(user_input)
-        st.session_state.chat_history.append(("user", user_input))
-        supabase.table("chat_memory").insert({"user_name": user_name, "role": "user", "message": user_input}).execute()
-
-        raw_history = st.session_state.chat_history
-        valid_history = []
-        target_role = "user"
-        
-        for r, t in reversed(raw_history):
-            if r == target_role:
-                valid_history.append((r, t))
-                target_role = "assistant" if target_role == "user" else "user"
-                
-        valid_history.reverse()
-        
-        # 🚨 AI 서버 요금 및 기억력 붕괴 방지를 위해 최근 20개 대화만 전송
-        valid_history = valid_history[-20:]
-
-        contents = []
-        for r, t in valid_history:
-            role = "model" if r == "assistant" else "user"
-            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=t)]))
-
-        with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=contents,
-                config={
-                    "system_instruction": winter_persona,
-                    "response_mime_type": "application/json"
-                }
-            )
-        
-        raw_json_text = response.text
-        
-        try:
-            # 🚨 [JSON 깨짐 완벽 방어막] 마크다운이 섞여와도 청소해서 파싱!
-            clean_json_text = raw_json_text.strip()
-            if clean_json_text.startswith("```json"):
-                clean_json_text = clean_json_text[7:]
-            if clean_json_text.endswith("```"):
-                clean_json_text = clean_json_text[:-3]
-            clean_json_text = clean_json_text.strip()
-            
-            parsed_data = json.loads(clean_json_text)
-            scene = parsed_data.get('장면', '기본')
-            img_path = scene_images.get(scene, scene_images["기본"])
-            
-            item = parsed_data.get('획득아이템', '없음')
-            if item and item != "없음":
-                st.session_state.inventory.append(item)
-                supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": item}).execute()
-                st.toast(f'🎉 겨울이가 [{item}]을(를) 보관함에 넣었습니다!', icon='🎁')
-            
-            with st.chat_message("assistant", avatar="❄️"):
-                st.image(img_path, width=350)
-                score = int(parsed_data.get('호감도변화', 0))
-                heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
-        
-        except json.JSONDecodeError:
-            # 🚨 [최후의 보루] AI가 진짜 외계어를 뱉어서 해독이 불가능할 때!
-            with st.chat_message("assistant", avatar="❄️"):
-                st.image(scene_images["기본"], width=350)
-                st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[호감도 변화: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
-                
-        st.session_state.chat_history.append(("assistant", raw_json_text))
-        supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": raw_json_text}).execute()
-        
-        st.rerun()
+                if clean_text.startswith("
+http://googleusercontent.com/immersive_entry_chip/0
+http://googleusercontent.com/immersive_entry_chip/1
+http://googleusercontent.com/immersive_entry_chip/2
+http://googleusercontent.com/immersive_entry_chip/3
