@@ -8,20 +8,15 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.8] 햄버거 버튼 부활 & 쓸데없는 우측 메뉴만 제거!
+# 🎨 [디자인 정밀 광택 2.3] 상단 헤더 숨김 & 로비 탭(친구목록/업데이트) UI 적용
 # =====================================================================
 st.markdown("""
     <style>
-    /* 🚨 [NEW] 전체 헤더를 날리지 않고, Fork 및 우측 툴바 메뉴만 쏙 골라서 제거! */
-    [data-testid="stToolbar"] {visibility: hidden !important;}
-    .stDeployButton {display: none !important;}
-    #MainMenu {visibility: hidden !important;}
-    footer {visibility: hidden !important;}
-    
-    /* 본문 상단 여백 깔끔하게 정리 (이제 고정 헤더 없으니 기본값으로) */
-    .block-container {
-        padding-top: 3rem !important;
-    }
+    /* 우측 상단 Fork 버튼 및 Streamlit 기본 헤더 완벽 제거 */
+    [data-testid="stHeader"] {display: none;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
     
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -95,7 +90,7 @@ st.markdown("""
         border-radius: 10px !important;
     }
     
-    /* 탭 UI 예쁘게 커스텀 */
+    /* 🚨 [NEW] 탭 UI 예쁘게 커스텀 */
     .stTabs [data-baseweb="tab-list"] {
         gap: 24px;
     }
@@ -165,9 +160,10 @@ if st.session_state.page == "login":
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
+    # 로비 진입 시 유저의 누적 호감도 데이터를 먼저 조회 (차단 여부 확인용)
     lobby_mem = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     current_affection = int(lobby_mem.data[0]["message"]) if lobby_mem.data else 0
-    is_blocked = current_affection <= -50
+    is_blocked = current_affection <= -50 # -50점 이하면 차단 상태
     
     col1, col2 = st.columns([8, 2])
     with col1:
@@ -180,6 +176,7 @@ elif st.session_state.page == "lobby":
 
     st.write(f"반갑습니다, **{user_name}**님!")
     
+    # 🚨 [NEW] 탭 생성: 친구 목록 vs 업데이트 내역
     tab1, tab2 = st.tabs(["👥 친구 목록", "📢 업데이트 내역"])
 
     # --- 탭 1: 친구 목록 ---
@@ -242,46 +239,27 @@ elif st.session_state.page == "lobby":
         st.subheader("🛠️ 멀티버스 패치 노트")
         st.write("AI 멀티버스의 시스템 변경점과 새로운 기능을 확인하세요.")
         
+        # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
-            **[ v2.8.0 ] 2026.03.31 (화)**
-            * **[00:10] 📱 메뉴 사이드바 통합 & 열기 버그 픽스:** 캔버스 샌드박스에서 오류를 뿜던 상단 고정 헤더를 과감히 버리고, 모바일 환경에 가장 최적화된 **좌측 사이드바(인벤토리)** 안으로 로비 버튼, 기억 리셋, 호감도 바를 모두 편입시켰습니다! 또한 사이드바를 닫으면 다시 안 열리던 치명적 버그를 완벽하게 고쳤습니다!
-
-            ---
-            **[ v2.7.0 ] 2026.03.31 (화)**
-            * **[00:00] 🏆 찐 상단 고정 헤더 완벽 구현 시도:** 캔버스 모드 대응 테스트 (버그 발생).
-
-            ---
-            **[ v2.6.0 ] 2026.03.30 (월)**
-            * **[23:55] 🐛 스크롤 마비 버그 긴급 픽스:** 상단 헤더를 고정하려다가 전체 페이지 스크롤이 죽어버리는 치명적인 버그를 임시 조치했습니다.
-
-            ---
-            **[ v2.5.0 ] 2026.03.30 (월)**
-            * **[23:50] 📌 찐 상단 고정 헤더 완벽 적용 시도:** PC/모바일 대응 고정 헤더 적용 (버그 발생).
-
-            ---
-            **[ v2.4.0 ] 2026.03.30 (월)**
-            * **[23:45] 📌 상단 고정 헤더(Sticky Header) 적용 시도:** 채팅방 상단 메뉴 고정 기능의 첫 베타 테스트를 진행했습니다.
-
-            ---
             **[ v2.3.0 ] 2026.03.30 (월)**
             * **[23:40] 📢 로비 UI 탭 분리:** 기존 채팅방 안에 있던 패치 노트(업데이트 내역)를 밖으로 빼내어 로비 화면에 별도의 탭으로 예쁘게 정리했습니다! 채팅방은 오직 대화에만 몰입할 수 있도록 깔끔해졌습니다.
 
             ---
             **[ v2.2.0 ] 2026.03.30 (월)**
-            * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다.
-
+            * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다. 상단 헤더 및 Fork 버튼도 완벽하게 숨김 처리 완료!
+            
             ---
             **[ v2.1.3 ] 2026.03.30 (월)**
             * **[21:30] 🛡️ 기억 리셋 안전장치(팝업) 추가:** 실수로 '방 기억 리셋' 버튼을 눌러 소중한 추억이 날아가는 것을 방지하기 위해, 한 번 더 확인하는 경고 팝업창을 적용했습니다.
 
             ---
             **[ v2.1.2 ] 2026.03.30 (월)**
-            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결했습니다.
+            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
 
             ---
             **[ v2.1.1 ] 2026.03.30 (월)**
-            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다.
+            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
 
             ---
             **[ v2.1.0 ] 2026.03.30 (월)**
@@ -293,7 +271,7 @@ elif st.session_state.page == "lobby":
             
             ---
             **[ v1.8.2 ] 2026.03.30 (월)**
-            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다!
+            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
             
             ---
             **[ v1.8.1 ] 2026.03.30 (월)**
@@ -302,6 +280,7 @@ elif st.session_state.page == "lobby":
             ---
             **[ v1.7.0 ] 2026.03.30 (월)**
             * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
+            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
             
             ---
             **[ v1.6.0 ] 2026.03.30 (월)**
@@ -335,7 +314,11 @@ elif st.session_state.page == "lobby":
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # DB 초기화 및 조회
+    # 🔙 상단 네비게이션: 뒤로 가기
+    if st.button("🔙 로비로 돌아가기"):
+        st.session_state.page = "lobby"
+        st.rerun()
+
     if "turn_count" not in st.session_state:
         st.session_state.turn_count = 0
 
@@ -364,62 +347,14 @@ elif st.session_state.page == "chat_winter":
             first_msg = f'{{"장면": "기본", "행동": "팔짱을 꼬며 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐야, {user_name}. 왜 이렇게 일찍 일어났어?"}}'
             st.session_state.chat_history.append(("assistant", first_msg))
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": first_msg}).execute()
+            # 첫 접속 시 호감도 0 저장
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
-
-    affection_score = st.session_state.affection
-    
-    # 🚨 [NEW] 네 아이디어 적용! 햄버거 메뉴(사이드바) 안에 핵심 컨트롤을 다 몰아넣었어!
-    with st.sidebar:
-        st.title("⚙️ 겨울이 방 메뉴")
-        
-        # 1. 호감도 게이지바 (제일 위에 배치해서 언제든 확인 가능!)
-        progress_val = max(0, min(affection_score, 100)) 
-        st.markdown(f"💖 **현재 호감도: {affection_score} / 100**")
-        st.progress(progress_val / 100.0)
-        
-        st.divider()
-        
-        # 2. 로비로 가기 & 리셋 버튼 (가로로 예쁘게 배치)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🔙 로비로", use_container_width=True):
-                st.session_state.page = "lobby"
-                st.rerun()
-        with col2:
-            with st.popover("🔄 리셋", use_container_width=True):
-                st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.")
-                if st.button("✅ 영구 삭제", use_container_width=True):
-                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                    st.session_state.pop("chat_history", None)
-                    st.session_state.pop("inventory", None)
-                    st.session_state.pop("core_memory", None)
-                    st.session_state.pop("affection", None)
-                    st.rerun()
-                    
-        st.divider()
-
-        # 3. 기존 인벤토리 & 코어 메모리
-        st.title("🎒 겨울이의 인벤토리")
-        st.write("유저가 준 선물들이 여기에 보관됩니다.")
-        if st.session_state.inventory:
-            for item in st.session_state.inventory:
-                st.success(f"🎁 {item}")
-        else:
-            st.info("아직 텅 비어있습니다.")
-            
-        if st.session_state.core_memory:
-            st.divider()
-            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
-            st.info(st.session_state.core_memory)
-
-    # --- 메인 화면 (채팅만 집중할 수 있게 완전 깔끔해짐!) ---
-    st.title(f"❄️ {user_name} & 한겨울")
-    st.caption("좌측 상단의 [>] 버튼을 눌러 호감도와 인벤토리를 확인하세요!")
-    st.divider()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
+    # 호감도 점수에 따른 동적 티어제 프롬프트 설정
+    affection_score = st.session_state.affection
     if affection_score > 70:
         tier_persona = "상태: [메가데레/연인]. 완전히 마음을 연 상태야. 배경이나 장면 묘사도 '침대_유혹', '침대_요염', '포옹_허리' 등을 자주 사용하고, 대사도 엄청 달달하고 애교가 넘치게 해줘. 츤데레 모습은 거의 사라졌어."
     elif affection_score > 30:
@@ -440,7 +375,7 @@ elif st.session_state.page == "chat_winter":
     3. 성격 및 관계 진행도 (중요): {tier_persona}
     4. 만약 유저가 대화 중에 선물을 주면, 반드시 "획득아이템" 칸에 그 이름을 적어! (안 주면 "없음" 입력)
     5. [이스터에그]: 유저가 "파이님 충성충성" 입력 시 무조건 장면="침대_유혹", 호감도=5 로 세팅하고 극강의 애교 부리기.
-    6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 차갑게 잘라내.
+    6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 차갑게 잘라내. (호감도가 -50 이하로 떨어지면 유저는 방에서 강제 추방되니 경고해 줘도 좋아.)
 
     {{
         "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택 (호감도가 높을수록 다정한 씬, 선 넘을 시 '기본' 또는 '힘듦' 선택)",
@@ -450,6 +385,46 @@ elif st.session_state.page == "chat_winter":
         "대사": "실제로 할 대사"
     }}
     """
+
+    with st.sidebar:
+        st.title("🎒 겨울이의 인벤토리")
+        st.write("유저가 준 선물들이 여기에 보관됩니다.")
+        st.divider()
+        if st.session_state.inventory:
+            for item in st.session_state.inventory:
+                st.success(f"🎁 {item}")
+        else:
+            st.info("아직 텅 비어있습니다.")
+            
+        if st.session_state.core_memory:
+            st.divider()
+            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
+            st.write("겨울이가 당신과의 기억을 어떻게 요약하고 있는지 확인해보세요!")
+            st.info(st.session_state.core_memory)
+
+    col1, col2 = st.columns([7, 3])
+    with col1:
+        st.title(f"❄️ {user_name} & 한겨울")
+    with col2:
+        st.write("") 
+        with st.popover("🔄 방 기억 리셋", use_container_width=True):
+            st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.\n\n정말 모든 기억을 지우시겠습니까?")
+            if st.button("✅ 네, 영구 삭제합니다", use_container_width=True):
+                supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                st.session_state.pop("chat_history", None)
+                st.session_state.pop("inventory", None)
+                st.session_state.pop("core_memory", None)
+                st.session_state.pop("affection", None)
+                st.rerun()
+
+    # 채팅방 상단에 예쁜 호감도 진행률 바 (Progress Bar)
+    st.divider()
+    progress_val = max(0, min(affection_score, 100)) 
+    st.write(f"💖 **현재 겨울이와의 호감도: {affection_score} / 100**")
+    st.progress(progress_val / 100.0)
+    st.divider()
+
+    # 🚨 [NEW] 기존에 여기에 있던 패치 노트(expander)는 완전히 삭제해서 채팅창을 깔끔하게 만들었어!
 
     for role, text in st.session_state.chat_history:
         if role == "user":
