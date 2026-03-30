@@ -8,91 +8,87 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택] 창조주의 커스텀 CSS 마법! (카톡 스타일)
+# 🎨 [디자인 정밀 광택 2.0] 다크/라이트 모드 완벽 대응 CSS!
 # =====================================================================
 st.markdown("""
     <style>
-    /* 기본 배경색을 카톡 느낌의 연한 하늘색으로! */
-    .stApp {
-        background-color: #f0f0f0;
-    }
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
     
-    /* 전체 레이아웃 네모네모하게 딱딱! */
+    /* 전체 레이아웃 여백 깎기 */
     div.block-container {
         padding-top: 1rem;
         padding-bottom: 0rem;
     }
 
-    /* 📱 카톡 프로필 카드 스타일 (가장 핵심!) */
-    .chat-card {
-        border: 1px solid #e0e0e0;
+    /* 📱 카톡 프로필 카드 (다크모드/라이트모드 글씨 안 보임 현상 완벽 해결!) */
+    .profile-card {
+        border: 1px solid var(--faded-text40);
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 12px;
-        background-color: white;
+        background-color: var(--secondary-background-color); /* 기기 테마에 맞춰 알아서 변함! */
+        color: var(--text-color); /* 글씨 색깔도 알아서 변함! */
         transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         align-items: center;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* 마우스 갖다 대면 살짝 뜨게! */
-    .chat-card:hover {
+    .profile-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
     /* 동그란 이모지 프로필 사진 */
     .profile-img {
         width: 60px;
         height: 60px;
-        background-color: #f7e600; /* 카톡 노란색 배경 */
+        background-color: #f7e600; /* 카톡 노란색 */
+        color: black; /* 이모지는 무조건 까맣게 보여야 함 */
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 30px;
         margin-right: 15px;
-        border: 1px solid #ddd;
     }
     
     /* 친구 이름 */
     .profile-name {
         font-size: 18px;
         font-weight: bold;
+        color: var(--text-color);
         margin-bottom: 3px;
     }
     
     /* 친구 설명 */
     .profile-desc {
         font-size: 13px;
-        color: #888;
+        color: var(--text-color);
+        opacity: 0.7; /* 살짝 투명하게 해서 고급지게 */
         line-height: 1.2;
     }
 
-    /* 대화하기 버튼 스타일 (카톡 노란색!) */
+    /* 대화하기 버튼 스타일 */
     .stButton>button {
-        background-color: white;
-        color: black;
         border-radius: 20px;
         border: 1px solid #f7e600;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
     }
     .stButton>button:hover {
         background-color: #f7e600;
+        color: black !important;
         border: 1px solid #f7e600;
     }
     
-    /* 로그인 폼, 리셋 버튼 등 둥글게! */
     .stTextInput>div>div>input, .stForm {
         border-radius: 10px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 🚨 14가지 상황별 일러스트 지도 (본섭 주소 하드코딩)
+# 🚨 14가지 상황별 일러스트 지도
 scene_images = {
     "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
     "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
@@ -118,7 +114,7 @@ supabase_key = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(supabase_url, supabase_key)
 client = genai.Client(api_key=api_key)
 
-# 🚪 화면 이동을 통제하는 '페이지 라우터' 초기화
+# 🚪 페이지 라우터 초기화
 if "page" not in st.session_state:
     st.session_state.page = "login"
 if "user_name" not in st.session_state:
@@ -136,11 +132,11 @@ if st.session_state.page == "login":
         
     if submit_button and name_input:
         st.session_state.user_name = name_input
-        st.session_state.page = "lobby" # 로비로 이동!
+        st.session_state.page = "lobby"
         st.rerun()
 
 # =====================================================================
-# 📱 2. 카카오톡 로비 화면 (Lobby) - UI/UX 2.0 완결판
+# 📱 2. 카카오톡 로비 화면 (Lobby)
 # =====================================================================
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
@@ -157,51 +153,51 @@ elif st.session_state.page == "lobby":
     st.write(f"반갑습니다, **{user_name}**님! 오늘 대화할 AI 친구를 선택하세요.")
     st.divider()
 
-    # 📱 친구목록 카드 1번: 한겨울 (커스텀 HTML/CSS 복합 조립)
-    # col1=프로필사진, col2=이름/설명, col3=버튼 (스트림릿 레이아웃과 HTML을 교묘하게 합쳐야 함!)
-    
-    col1, col2 = st.columns([1, 6]) # 프로필 사진 | 텍스트+버튼
-    with col1:
-        st.markdown('<div class="profile-img">❄️</div>', unsafe_allow_html=True)
-    with col2:
-        # 이름과 설명을 HTML로 깔끔하게 배치
-        st.markdown(f'''
-            <div>
-                <div class="profile-name">한겨울</div>
-                <div class="profile-desc">까칠한 츤데레 여사친. 은근히 챙겨주는 스타일. <br>VR Test 진행 중!</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        # 스트림릿 진짜 버튼 (HTML 카드 안에 못 넣어서 아래에 깔아야 함!)
-        if st.button("한겨울과 대화하기 💬", key="btn_winter", use_container_width=True):
-            st.session_state.page = "chat_winter" # 한겨울 방으로 이동!
-            st.rerun()
-            
-    st.markdown('</div><br>', unsafe_allow_html=True) # 카드 닫기 및 띄어쓰기
+    # 📱 카드 1번: 한겨울
+    with st.container():
+        st.markdown('<div class="profile-card">', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 4, 2])
+        with col1:
+            st.markdown('<div class="profile-img">❄️</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'''
+                <div>
+                    <div class="profile-name">한겨울</div>
+                    <div class="profile-desc">까칠한 츤데레 여사친. 은근히 챙겨주는 스타일. <br>VR Test 진행 중!</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col3:
+            if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
+                st.session_state.page = "chat_winter"
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # 📱 친구목록 카드 2번: 임슬아 (커스텀 HTML/CSS 복합 조립)
-    col1, col2 = st.columns([1, 6])
-    with col1:
-        st.markdown('<div class="profile-img">🌸</div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown(f'''
-            <div>
-                <div class="profile-name">임슬아</div>
-                <div class="profile-desc">[🚧 신규 추가] 아직 성격과 세계관이 부여되지 않았습니다.<br>조만간 업데이트됩니다!</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        # 스트림릿 진짜 버튼
-        if st.button("임슬아와 대화하기 💬", key="btn_seula", use_container_width=True):
-            st.toast("🚧 임슬아는 아직 개발 중입니다! 츤데레 겨울이랑 먼저 놀아주세요.", icon="🚧")
-    st.markdown('</div><br>', unsafe_allow_html=True) # 카드 닫기
+    # 📱 카드 2번: 임슬아
+    with st.container():
+        st.markdown('<div class="profile-card">', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 4, 2])
+        with col1:
+            st.markdown('<div class="profile-img">🌸</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'''
+                <div>
+                    <div class="profile-name">임슬아</div>
+                    <div class="profile-desc">[🚧 신규 추가] 아직 성격과 세계관이 부여되지 않았습니다.<br>조만간 업데이트됩니다!</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col3:
+            if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
+                st.toast("🚧 임슬아는 아직 개발 중입니다! 츤데레 겨울이랑 먼저 놀아주세요.", icon="🚧")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =====================================================================
-# ❄️ 3. 한겨울 채팅방 화면 (Chat - Winter) - 예전 코드 완벽 동일
+# ❄️ 3. 한겨울 채팅방 화면 (Chat - Winter)
 # =====================================================================
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # 🔙 뒤로 가기 버튼 (카톡 상단바 느낌)
+    # 🔙 뒤로 가기 버튼
     if st.button("🔙 로비로 돌아가기"):
         st.session_state.page = "lobby"
         st.rerun()
@@ -288,6 +284,25 @@ elif st.session_state.page == "chat_winter":
             
     st.divider()
 
+    with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
+        with st.container(height=250):
+            st.markdown("""
+            **[ v2.1.1 ] 2026.03.30 (월)**
+            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
+
+            ---
+            **[ v2.1.0 ] 2026.03.30 (월)**
+            * **[21:15] 📱 멀티버스 로비 UI 전면 개편:** 카카오톡 친구 목록처럼 둥글고 깔끔한 프로필 카드로 로비 화면을 예쁘게 단장했습니다.
+            
+            ---
+            **[ v2.0.0 ] 2026.03.30 (월)**
+            * **[21:10] 🌐 멀티 캐릭터 시스템 도입:** 로비 화면이 추가되어, 접속 후 대화할 AI 상대(한겨울, 임슬아 등)를 선택할 수 있는 멀티버스 아키텍처로 진화했습니다!
+            
+            ---
+            **[ v1.8.2 ] 2026.03.30 (월)**
+            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약' 화면을 모든 유저에게 개방했습니다! 
+            """)
+
     for role, text in st.session_state.chat_history:
         if role == "user":
             with st.chat_message("user"):
@@ -373,7 +388,7 @@ elif st.session_state.page == "chat_winter":
                 st.image(img_path, width=350)
                 score = int(parsed_data.get('호감도변화', 0))
                 heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
+                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
         except json.JSONDecodeError:
             with st.chat_message("assistant", avatar="❄️"):
