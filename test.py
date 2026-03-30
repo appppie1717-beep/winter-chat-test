@@ -8,7 +8,7 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.4.2] 흔들리지 않는 편안함! 절대 고정(Fixed) 메뉴 탭 도입!
+# 🎨 [디자인 정밀 광택 2.4.3] 오지랖 CSS 전면 폐기! 순정 UI 복구 및 대화창 정상화!
 # =====================================================================
 st.markdown("""
     <style>
@@ -19,22 +19,8 @@ st.markdown("""
     footer { display: none !important; visibility: hidden !important; }
     .stDeployButton { display: none !important; visibility: hidden !important; }
     .stAppDeployButton { display: none !important; visibility: hidden !important; }
-    
-    /* 🔥 [핵심] 스크롤 무시! 절대 화면 상단에 꽂아버리는 Fixed 대시보드 CSS 🔥 */
-    div[data-testid="stVerticalBlock"]:has(#sticky-menu-target) {
-        position: fixed !important;
-        top: 0px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 100% !important;
-        max-width: 730px !important; /* Streamlit centered 레이아웃의 기본 최대 폭에 맞춤 */
-        z-index: 999999 !important;
-        background-color: var(--secondary-background-color) !important;
-        padding: 10px 15px 5px 15px !important;
-        border-radius: 0px 0px 15px 15px !important;
-        border-bottom: 2px solid #f7e600 !important;
-        box-shadow: 0px 6px 15px rgba(0,0,0,0.15) !important;
-    }
+
+    /* 화면 전체를 먹통으로 만들었던 망할 fixed CSS 코드는 완전히 삭제했습니다! */
 
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -260,12 +246,16 @@ elif st.session_state.page == "lobby":
         # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.4.3 ] 2026.03.31 (화)**
+            * **[00:47] 🚨 치명적 버그 수정! 대화창 먹통 현상 해결:** 화면 상단에 메뉴를 억지로 고정시키려다 전체 앱의 스크롤과 마우스 클릭을 얼려버렸던 망할 CSS 코드(`position: fixed`)를 완전히 폐기하고 순정 상태로 되돌렸습니다. 이제 채팅 입력창이 완벽하게 클릭되며 스크롤도 부드럽게 정상 작동합니다. 유저의 "1을 하라고 했으면 1만 해라" 피드백을 깊이 새겨, 예쁜 4단 메뉴 디자인만 남기고 오지랖 기능은 삭제했습니다!
+
+            ---
             **[ v2.4.2 ] 2026.03.31 (화)**
-            * **[00:42] 📌 스크롤 철벽 방어! 절대 고정(Fixed) 메뉴 탭:** 브라우저 환경에 따라 스크롤을 내릴 때 상단 메뉴 탭이 같이 사라져버리던 치명적인 버그(Sticky 오류)를 완전히 박멸했습니다! 이제 `position: fixed` 기술을 적용하여, 스크롤을 아무리 수백 번 내려도 4단 팝업 대시보드가 절대 화면 상단을 벗어나지 않고 유저를 든든하게 서포트합니다!
+            * **[00:42] 📌 스크롤 방어 시도(오류 발생):** `position: fixed`를 적용하여 전체 화면의 클릭 이벤트가 막히는 치명적인 버그가 발생했던 흑역사 버전.
 
             ---
             **[ v2.4.1 ] 2026.03.31 (화)**
-            * **[00:38] 📌 상단 고정(Sticky) 메뉴바 & 역사관 복구:** 대시보드(로비/호감도/가방/리셋 팝업 통합)를 도입하고 초창기 역사관을 복원했습니다.
+            * **[00:38] 📌 4단 팝업 통합 메뉴 & 역사관 복구:** 대시보드(로비/호감도/가방/리셋 팝업 통합)를 도입하고 초창기 역사관을 복원했습니다.
 
             ---
             **[ v2.4.0 ] 2026.03.31 (화)**
@@ -379,11 +369,8 @@ elif st.session_state.page == "chat_winter":
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     affection_score = st.session_state.affection
     
-    # 🔥 [핵심 업데이트] 스크롤 무시! 모니터 화면 최상단에 물리적으로 못 박아버린 4단 고정 팝업 메뉴! 🔥
+    # 🔥 [핵심 업데이트] 억지로 화면 멈추게 만들었던 망할 고정 코드 다 지우고, 그냥 깔끔하게 상단에 배치! 🔥
     with st.container():
-        # CSS 타겟팅을 위한 투명 마커 삽입
-        st.markdown('<div id="sticky-menu-target"></div>', unsafe_allow_html=True)
-        
         m1, m2, m3, m4 = st.columns(4)
         
         # 1. 로비로 돌아가기 버튼
@@ -426,9 +413,6 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.pop("core_memory", None)
                     st.session_state.pop("affection", None)
                     st.rerun()
-
-    # Fixed 메뉴가 화면을 가리지 않도록 상단에 투명한 여백(범퍼) 삽입
-    st.markdown("<div style='height: 70px;'></div>", unsafe_allow_html=True)
     
     # 채팅방 타이틀 깔끔하게 배치
     st.title(f"❄️ {user_name} & 한겨울")
