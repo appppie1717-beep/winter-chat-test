@@ -8,7 +8,7 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.3.2] 사이드바 토글 버튼(인벤토리) 하단 이동 및 구출 작전 완수!
+# 🎨 [디자인 정밀 광택 2.3.3] 사이드바 버튼(인벤토리) 로비 화면 구출 및 호환성 강화!
 # =====================================================================
 st.markdown("""
     <style>
@@ -23,11 +23,12 @@ st.markdown("""
     #MainMenu { display: none !important; visibility: hidden !important; }
     footer { display: none !important; visibility: hidden !important; }
     .stDeployButton { display: none !important; visibility: hidden !important; }
+    .stAppDeployButton { display: none !important; visibility: hidden !important; }
     
-    /* 🔥 대망의 사이드바(인벤토리) 여는 버튼 구출 & 하단 이동 커스텀 🔥 */
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        top: 25px !important; /* 유저의 아이디어대로 원래보다 살짝 아래로 내림! */
+    /* 🔥 대망의 사이드바(인벤토리) 여는 버튼 구출 & 커스텀 (최신/구버전 모두 타겟팅) 🔥 */
+    [data-testid="collapsedControl"], 
+    [data-testid="stSidebarCollapsedControl"] {
+        top: 15px !important; 
         left: 15px !important;
         z-index: 999999 !important; /* 절대 다른 레이어에 가려지지 않게 최상단 배치 */
         background-color: var(--secondary-background-color) !important; /* 배경색 추가해서 눈에 확 띄게 */
@@ -36,7 +37,8 @@ st.markdown("""
         padding: 5px !important;
         transition: transform 0.2s;
     }
-    [data-testid="collapsedControl"]:hover {
+    [data-testid="collapsedControl"]:hover,
+    [data-testid="stSidebarCollapsedControl"]:hover {
         transform: scale(1.1); /* 마우스 올리면 살짝 커지는 효과 */
     }
     
@@ -182,6 +184,14 @@ if st.session_state.page == "login":
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
+    # 🚨 [중요 픽스] 로비 화면에서도 사이드바가 존재하도록 선언! (그래야 버튼이 사라지지 않음)
+    with st.sidebar:
+        st.title("🌐 멀티버스 로비")
+        st.write("채팅방에 입장하기 전 대기실입니다.")
+        st.info("오른쪽 화면에서 대화할 AI 친구를 선택하고 방에 들어가면, 이곳에 해당 친구와의 추억(일기장)과 획득한 선물(인벤토리)이 짠! 하고 표시됩니다.")
+        st.divider()
+        st.write("Tip: 좌측 상단의 `>` 버튼을 누르면 언제든 이 패널을 열고 닫을 수 있습니다.")
+
     # 로비 진입 시 유저의 누적 호감도 데이터를 먼저 조회 (차단 여부 확인용)
     lobby_mem = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     current_affection = int(lobby_mem.data[0]["message"]) if lobby_mem.data else 0
@@ -264,6 +274,10 @@ elif st.session_state.page == "lobby":
         # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.3.3 ] 2026.03.31 (화)**
+            * **[00:26] 🎒 사이드바 닌자 탈출 사건 해결:** 사이드바(인벤토리) 내용이 겨울이 채팅방에만 존재하여, 로비 화면에서는 여는 버튼 자체가 소멸해 버리는 Streamlit의 숨겨진 로직을 파악했습니다! 이제 로비 화면에도 대기실 전용 사이드바를 추가하여, 언제 어디서든 왼쪽 상단의 메뉴 버튼이 사라지지 않도록 근본적인 버그를 해결했습니다.
+
+            ---
             **[ v2.3.2 ] 2026.03.31 (화)**
             * **[00:22] 🎒 사이드바 UI 완벽 구출 작전:** 헤더를 투명하게 만들면서 사라졌던 인벤토리(사이드바) 여는 버튼을 원래 위치보다 살짝 아래로 내리고 최상단 레이어로 띄워서 완벽하게 구출해 냈습니다! 유저의 날카로운 직관 덕분에 빠르게 해결되었습니다. 
 
