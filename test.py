@@ -65,7 +65,11 @@ if "user_name" not in st.session_state:
 else:
     user_name = st.session_state.user_name
 
-    # 🚨 DB 데이터 불러오기 (UI 최적화: 최근 50개만 화면에 표시하여 렉 방지!)
+    # 🚨 [만보기 생성] 대화 턴 수 측정용
+    if "turn_count" not in st.session_state:
+        st.session_state.turn_count = 0
+
+    # 🚨 DB 데이터 불러오기 (UI 최적화: 50개)
     if "chat_history" not in st.session_state or "inventory" not in st.session_state:
         response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(50).execute()
         db_history = reversed(response.data)
@@ -92,7 +96,7 @@ else:
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
-    # 🚨 [프롬프트 대수술] 19금, 스토킹 원천 차단 가드레일 + 핵심 기억 주입!
+    # 🚨 [프롬프트] 19금 가드레일 + 핵심 기억 주입
     winter_persona = f"""
     너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야.
     내 닉네임은 '{user_name}'이야. 
@@ -126,11 +130,11 @@ else:
         else:
             st.info("아직 텅 비어있습니다.")
             
-        # 👑 창조주 파이만 몰래 볼 수 있는 '겨울이의 뇌(Core Memory)' 훔쳐보기 기능!
-        if user_name == "파이" and st.session_state.core_memory:
+        # 🔓 [봉인 해제] 모든 유저에게 겨울이의 뇌(Core Memory) 실시간 모니터링 개방!
+        if st.session_state.core_memory:
             st.divider()
-            st.write("👑 시스템 관리자 전용 뷰")
-            st.write("🧠 **현재 AI가 기억중인 요약본**")
+            st.write("🧠 **겨울이의 일기장 (우리의 추억)**")
+            st.write("겨울이가 당신과의 기억을 어떻게 요약하고 있는지 확인해보세요!")
             st.info(st.session_state.core_memory)
 
     col1, col2 = st.columns([7, 3])
@@ -148,13 +152,16 @@ else:
     with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
         with st.container(height=250):
             st.markdown("""
-            **[ v1.8.0 ] 2026.03.30 (월)**
-            * **[20:00] 🧠 자동 롤링 메모리 탑재:** 이제 겨울이와 대화를 20번 나눌 때마다, AI가 백그라운드에서 조용히 과거의 기억을 요약하고 압축하여 영구 기억으로 변환합니다. 더 이상 옛날 일을 잊어버리지 않습니다!
+            **[ v1.8.2 ] 2026.03.30 (월)**
+            * **[20:10] 🔓 추억 요약본 전면 개방:** 기존에 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
+            
+            ---
+            **[ v1.8.1 ] 2026.03.30 (월)**
+            * **[20:15] 🧠 자동 롤링 메모리 버그 수정:** 대화 카운터(만보기)를 도입하여, 유저가 정확히 10번(20문장) 대화할 때마다 백그라운드에서 자동으로 과거 기억을 요약 압축합니다. 
             
             ---
             **[ v1.7.0 ] 2026.03.30 (월)**
             * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
-            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
             """)
 
     for role, text in st.session_state.chat_history:
@@ -163,7 +170,6 @@ else:
                 st.markdown(text)
         else:
             try:
-                # 🚨 과거의 꼬인 데이터도 안전하게 열리도록 예외처리 강화
                 clean_text = text.strip()
                 if clean_text.startswith("```json"):
                     clean_text = clean_text[7:]
@@ -202,8 +208,6 @@ else:
                 target_role = "assistant" if target_role == "user" else "user"
                 
         valid_history.reverse()
-        
-        # 🚨 AI 서버 요금 및 기억력 붕괴 방지를 위해 최근 20개 대화만 전송
         valid_history = valid_history[-20:]
 
         contents = []
@@ -224,7 +228,6 @@ else:
         raw_json_text = response.text
         
         try:
-            # 🚨 [JSON 깨짐 완벽 방어막] 마크다운이 섞여와도 청소해서 파싱!
             clean_json_text = raw_json_text.strip()
             if clean_json_text.startswith("```json"):
                 clean_json_text = clean_json_text[7:]
@@ -249,7 +252,6 @@ else:
                 st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
         except json.JSONDecodeError:
-            # 🚨 [최후의 보루] AI가 진짜 외계어를 뱉어서 해독이 불가능할 때!
             with st.chat_message("assistant", avatar="❄️"):
                 st.image(scene_images["기본"], width=350)
                 st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[호감도 변화: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
@@ -257,8 +259,11 @@ else:
         st.session_state.chat_history.append(("assistant", raw_json_text))
         supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": raw_json_text}).execute()
         
-        # 🚨 [NEW] 자동 기억 압축 로직! (대화가 20개 쌓일 때마다 백그라운드 실행)
-        if len(st.session_state.chat_history) > 0 and len(st.session_state.chat_history) % 20 == 0:
+        # 🚨 정확한 카운터(만보기)를 이용한 자동 요약 발동!
+        st.session_state.turn_count += 1
+        
+        # 유저와 겨울이가 딱 10번 주고받으면 실행!
+        if st.session_state.turn_count >= 10: 
             with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
                 history_text = ""
                 for r, t in st.session_state.chat_history[-20:]: 
@@ -283,5 +288,8 @@ else:
                 supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
                 st.session_state.core_memory = summary_response.text
                 st.toast("🧠 겨울이의 장기 기억력이 업데이트되었습니다!", icon="✨")
+                
+            # 만보기 초기화! 다음 10번 대화 후 다시 실행되게 만듦.
+            st.session_state.turn_count = 0
 
         st.rerun()
