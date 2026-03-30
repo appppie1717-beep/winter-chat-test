@@ -8,7 +8,7 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.5] 스트림릿 한계 돌파: 진짜 절대 고정 상단 헤더 적용
+# 🎨 [디자인 정밀 광택 2.6] 스크롤 마비 버그 완벽 해결! (가장 안쪽 컨테이너만 고정)
 # =====================================================================
 st.markdown("""
     <style>
@@ -239,8 +239,12 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v2.6.0 ] 2026.03.30 (월)**
+            * **[23:55] 🐛 스크롤 마비 버그 긴급 픽스:** 상단 헤더를 고정하려다가 전체 페이지 스크롤이 죽어버리는 치명적인 버그를 해결했습니다. 이제 진짜로 헤더만 딱 고정되고 본문은 쌩쌩하게 스크롤됩니다!
+
+            ---
             **[ v2.5.0 ] 2026.03.30 (월)**
-            * **[23:50] 📌 찐 상단 고정 헤더(Absolute Fixed Header) 완벽 적용:** PC와 모바일을 가리지 않고 화면 스크롤 시 호감도와 뒤로가기 버튼이 무조건 최상단에 고정되어 따라다닙니다! 스트림릿의 스크롤 한계를 완전히 돌파했습니다.
+            * **[23:50] 📌 찐 상단 고정 헤더 완벽 적용 시도:** PC/모바일 대응 고정 헤더 적용 (버그 발생).
 
             ---
             **[ v2.4.0 ] 2026.03.30 (월)**
@@ -252,19 +256,19 @@ elif st.session_state.page == "lobby":
 
             ---
             **[ v2.2.0 ] 2026.03.30 (월)**
-            * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다. 상단 헤더 및 Fork 버튼도 완벽하게 숨김 처리 완료!
-            
+            * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다.
+
             ---
             **[ v2.1.3 ] 2026.03.30 (월)**
             * **[21:30] 🛡️ 기억 리셋 안전장치(팝업) 추가:** 실수로 '방 기억 리셋' 버튼을 눌러 소중한 추억이 날아가는 것을 방지하기 위해, 한 번 더 확인하는 경고 팝업창을 적용했습니다.
 
             ---
             **[ v2.1.2 ] 2026.03.30 (월)**
-            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
+            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결했습니다.
 
             ---
             **[ v2.1.1 ] 2026.03.30 (월)**
-            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
+            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다.
 
             ---
             **[ v2.1.0 ] 2026.03.30 (월)**
@@ -276,7 +280,7 @@ elif st.session_state.page == "lobby":
             
             ---
             **[ v1.8.2 ] 2026.03.30 (월)**
-            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
+            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다!
             
             ---
             **[ v1.8.1 ] 2026.03.30 (월)**
@@ -285,7 +289,6 @@ elif st.session_state.page == "lobby":
             ---
             **[ v1.7.0 ] 2026.03.30 (월)**
             * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
-            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
             
             ---
             **[ v1.6.0 ] 2026.03.30 (월)**
@@ -319,24 +322,25 @@ elif st.session_state.page == "lobby":
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # 모바일/PC 완벽 대응: 찐 '상단 고정(Fixed)' 헤더용 CSS 주입
+    # 🚨 [NEW] :not() 속성을 이용해 바깥쪽 부모 박스가 굳어버리는 현상 완벽 방지!
     st.markdown("""
     <style>
-    div[data-testid="stVerticalBlock"]:has(#fixed-header-anchor) {
+    /* 오직 fixed-header-anchor를 직속으로 품고 있는 '가장 안쪽' stVerticalBlock 하나만 고정! */
+    div[data-testid="stVerticalBlock"]:has(#fixed-header-anchor):not(:has(div[data-testid="stVerticalBlock"]:has(#fixed-header-anchor))) {
         position: fixed !important;
         top: 0px !important;
         left: 50% !important;
-        transform: translateX(-50%) !important; /* 화면 정중앙 정렬 */
+        transform: translateX(-50%) !important; 
         width: 100% !important;
-        max-width: 46rem !important; /* 스트림릿 기본 텍스트 너비에 맞춤 */
-        background-color: var(--background-color) !important; /* 다크/라이트 테마 자동 적응 */
-        z-index: 99999 !important; /* 무조건 제일 위에 보이게 */
+        max-width: 46rem !important; 
+        background-color: var(--background-color) !important; 
+        z-index: 99999 !important; 
         padding: 1rem 1rem 0.5rem 1rem !important;
         border-bottom: 2px solid var(--faded-text40) !important;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05) !important; /* 살짝 그림자 줘서 입체감 */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05) !important; 
     }
     
-    /* 고정된 상단바에 본문이 가려지지 않게 메인 캔버스 윗부분을 뻥 뚫어줌 */
+    /* 본문이 고정된 상단 헤더에 가려지지 않게 메인 캔버스 상단 여백 확보 */
     .main .block-container {
         padding-top: 180px !important;
     }
@@ -375,10 +379,10 @@ elif st.session_state.page == "chat_winter":
 
     affection_score = st.session_state.affection
     
-    # 이 컨테이너 전체가 CSS에 의해 화면 상단에 찰싹 붙어서 안 떨어지게 됨!
+    # 이 헤더 컨테이너가 CSS의 마법으로 화면 상단에 찰싹 붙습니다.
     sticky_header = st.container()
     with sticky_header:
-        # 여기에 보이지 않는 앵커(마커)를 박아서 CSS가 이 컨테이너를 찾아내게 만듦
+        # 이 투명한 앵커 태그가 CSS가 이 박스를 찾도록 도와주는 마커 역할!
         st.markdown("<div id='fixed-header-anchor'></div>", unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns([3, 4, 3])
@@ -403,7 +407,7 @@ elif st.session_state.page == "chat_winter":
         st.markdown(f"<div style='font-size:14px; margin-bottom:5px; margin-top:5px;'>💖 <b>현재 겨울이와의 호감도: {affection_score} / 100</b></div>", unsafe_allow_html=True)
         st.progress(progress_val / 100.0)
 
-    # 이 밑에서부터는 자연스럽게 스크롤되는 진짜 본문 영역이야.
+    # --- 여기서부터는 스크롤이 시원하게 내려가는 메인 채팅 공간 ---
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
