@@ -15,8 +15,6 @@ st.markdown("""
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
     
-    /* 🚨 아까 위에 버튼을 잘라먹었던 몹쓸 여백 코드는 삭제했음! 이제 안전함! */
-
     /* 📱 카톡 프로필 카드 */
     .profile-card {
         border: 1px solid var(--faded-text40);
@@ -193,7 +191,7 @@ elif st.session_state.page == "lobby":
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # 🔙 뒤로 가기 버튼
+    # 🔙 상단 네비게이션: 뒤로 가기
     if st.button("🔙 로비로 돌아가기"):
         st.session_state.page = "lobby"
         st.rerun()
@@ -271,21 +269,27 @@ elif st.session_state.page == "chat_winter":
         st.title(f"❄️ {user_name} & 한겨울")
     with col2:
         st.write("") 
-        if st.button("🔄 방 기억 리셋", use_container_width=True):
-            supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-            st.session_state.pop("chat_history", None)
-            st.session_state.pop("inventory", None)
-            st.session_state.pop("core_memory", None)
-            st.rerun()
+        # 🚨 [NEW] 실수 방지용 팝업 리셋 버튼 적용!
+        with st.popover("🔄 방 기억 리셋", use_container_width=True):
+            st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.\n\n정말 모든 기억을 지우시겠습니까?")
+            if st.button("✅ 네, 영구 삭제합니다", use_container_width=True):
+                supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                st.session_state.pop("chat_history", None)
+                st.session_state.pop("inventory", None)
+                st.session_state.pop("core_memory", None)
+                st.rerun()
             
     st.divider()
 
-    # 🚨 파이 디렉터님의 극대노를 부른 바로 그곳... 역사관 100% 원상복구!!!
     with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
         with st.container(height=250):
             st.markdown("""
+            **[ v2.1.3 ] 2026.03.30 (월)**
+            * **[21:30] 🛡️ 기억 리셋 안전장치(팝업) 추가:** 실수로 '방 기억 리셋' 버튼을 눌러 소중한 추억이 날아가는 것을 방지하기 위해, 한 번 더 확인하는 경고 팝업창을 적용했습니다.
+
+            ---
             **[ v2.1.2 ] 2026.03.30 (월)**
-            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 디렉터님의 요청에 따라 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
+            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
 
             ---
             **[ v2.1.1 ] 2026.03.30 (월)**
