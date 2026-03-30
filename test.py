@@ -8,24 +8,37 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.3.1] 사이드바 토글 버튼 복구 및 불필요한 헤더 숨김
+# 🎨 [디자인 정밀 광택 2.3.2] 사이드바 토글 버튼(인벤토리) 하단 이동 및 구출 작전 완수!
 # =====================================================================
 st.markdown("""
     <style>
-    /* 🛠️ 헤더를 완전히 날리지 않고 배경만 투명하게 처리 (좌측 사이드바 여는 > 버튼은 살려둠) */
+    /* 🛠️ 헤더 영역 배경을 투명하게 (화면을 가리지 않게) */
     [data-testid="stHeader"] {
         background-color: transparent !important;
+        box-shadow: none !important;
     }
     
-    /* 🛠️ 우측 상단의 거슬리는 툴바(Deploy 버튼, 깃허브 아이콘 등)만 핀셋 제거 */
-    [data-testid="stToolbar"] {
-        display: none !important;
-    }
+    /* 🛠️ 우측 상단의 거슬리는 툴바(Fork, Deploy 버튼, 햄버거 메뉴 등) 완벽 제거 */
+    [data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
+    #MainMenu { display: none !important; visibility: hidden !important; }
+    footer { display: none !important; visibility: hidden !important; }
+    .stDeployButton { display: none !important; visibility: hidden !important; }
     
-    /* Streamlit 기본 메뉴 및 Footer 숨김 */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display: none !important;}
+    /* 🔥 대망의 사이드바(인벤토리) 여는 버튼 구출 & 하단 이동 커스텀 🔥 */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        top: 25px !important; /* 유저의 아이디어대로 원래보다 살짝 아래로 내림! */
+        left: 15px !important;
+        z-index: 999999 !important; /* 절대 다른 레이어에 가려지지 않게 최상단 배치 */
+        background-color: var(--secondary-background-color) !important; /* 배경색 추가해서 눈에 확 띄게 */
+        border-radius: 50% !important; /* 예쁜 동그라미 모양 */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important; /* 살짝 떠 있는 듯한 입체감 그림자 */
+        padding: 5px !important;
+        transition: transform 0.2s;
+    }
+    [data-testid="collapsedControl"]:hover {
+        transform: scale(1.1); /* 마우스 올리면 살짝 커지는 효과 */
+    }
     
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -251,8 +264,12 @@ elif st.session_state.page == "lobby":
         # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.3.2 ] 2026.03.31 (화)**
+            * **[00:22] 🎒 사이드바 UI 완벽 구출 작전:** 헤더를 투명하게 만들면서 사라졌던 인벤토리(사이드바) 여는 버튼을 원래 위치보다 살짝 아래로 내리고 최상단 레이어로 띄워서 완벽하게 구출해 냈습니다! 유저의 날카로운 직관 덕분에 빠르게 해결되었습니다. 
+
+            ---
             **[ v2.3.1 ] 2026.03.31 (화)**
-            * **[00:17] 🎒 사이드바 UI 버그 핫픽스:** 상단 Fork 버튼을 지우면서 실수로 함께 날아갔던 왼쪽 사이드바 토글 버튼(인벤토리 열기 버튼)을 완벽하게 부활시켰습니다! 이제 다시 언제든 인벤토리와 일기장을 확인할 수 있습니다.
+            * **[00:17] 🎒 사이드바 UI 버그 핫픽스:** 상단 Fork 버튼을 지우면서 실수로 함께 날아갔던 왼쪽 사이드바 토글 버튼(인벤토리 열기 버튼)을 복구하려 시도했습니다.
 
             ---
             **[ v2.3.0 ] 2026.03.30 (월)**
