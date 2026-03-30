@@ -8,7 +8,7 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.4] 상단 헤더 숨김 & 로비 탭 UI (기존 유지)
+# 🎨 [디자인 정밀 광택 2.5] 스트림릿 한계 돌파: 진짜 절대 고정 상단 헤더 적용
 # =====================================================================
 st.markdown("""
     <style>
@@ -41,7 +41,7 @@ st.markdown("""
     .blocked-card {
         filter: grayscale(100%);
         opacity: 0.6;
-        pointer-events: none; /* 클릭 방지 */
+        pointer-events: none;
     }
 
     /* 동그란 이모지 프로필 사진 */
@@ -239,12 +239,12 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v2.4.0 ] 2026.03.30 (월)**
-            * **[23:45] 📌 상단 고정 헤더(Sticky Header) 적용:** 이제 대화가 아무리 길어져도 '로비로 돌아가기', '방 리셋', '호감도 바'가 스크롤을 따라다니며 화면 최상단에 고정됩니다! 호감도를 실시간으로 편하게 확인하세요!
+            **[ v2.5.0 ] 2026.03.30 (월)**
+            * **[23:50] 📌 찐 상단 고정 헤더(Absolute Fixed Header) 완벽 적용:** PC와 모바일을 가리지 않고 화면 스크롤 시 호감도와 뒤로가기 버튼이 무조건 최상단에 고정되어 따라다닙니다! 스트림릿의 스크롤 한계를 완전히 돌파했습니다.
 
             ---
-            **[ v2.3.0 ] 2026.03.30 (월)**
-            * **[23:40] 📢 로비 UI 탭 분리:** 기존 채팅방 안에 있던 패치 노트(업데이트 내역)를 밖으로 빼내어 로비 화면에 별도의 탭으로 예쁘게 정리했습니다!
+            **[ v2.4.0 ] 2026.03.30 (월)**
+            * **[23:45] 상단 고정 헤더 초기 시도:** 일부 환경에서 풀리는 현상 발견하여 2.5.0에서 수정.
             ---
             (이전 패치 노트 생략)
             """)
@@ -255,28 +255,31 @@ elif st.session_state.page == "lobby":
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
 
-    # 🚨 [NEW] 상단 고정(Sticky) 헤더용 CSS 주입 (오직 채팅방에서만 적용됨)
+    # 🚨 [NEW] 모바일/PC 완벽 대응: 찐 '상단 고정(Fixed)' 헤더용 CSS 주입
+    # 이 CSS는 #fixed-header-anchor를 품고 있는 부모 컨테이너 전체를 화면 꼭대기에 강제 고정시켜버려.
     st.markdown("""
     <style>
-    /* 메인 화면의 첫 번째 컨테이너를 최상단에 찰싹 고정시킴 */
-    .main .block-container > div[data-testid="stVerticalBlock"] > div:first-child {
-        position: sticky;
-        top: 0px;
-        background-color: var(--background-color); /* 다크/라이트모드 자동 대응 */
-        z-index: 999;
-        padding-top: 10px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid var(--faded-text40);
-        margin-bottom: 10px;
+    div[data-testid="stVerticalBlock"]:has(#fixed-header-anchor) {
+        position: fixed !important;
+        top: 0px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important; /* 화면 정중앙 정렬 */
+        width: 100% !important;
+        max-width: 46rem !important; /* 스트림릿 기본 텍스트 너비에 맞춤 */
+        background-color: var(--background-color) !important; /* 다크/라이트 테마 자동 적응 */
+        z-index: 99999 !important; /* 무조건 제일 위에 보이게 */
+        padding: 1rem 1rem 0.5rem 1rem !important;
+        border-bottom: 2px solid var(--faded-text40) !important;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05) !important; /* 살짝 그림자 줘서 입체감 */
     }
-    /* 스트림릿 기본 상단 여백을 살짝 줄여서 예쁘게 맞춤 */
-    .block-container {
-        padding-top: 2rem !important;
+    
+    /* 고정된 상단바에 본문이 가려지지 않게 메인 캔버스 윗부분을 뻥 뚫어줌 */
+    .main .block-container {
+        padding-top: 180px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # 데이터베이스 초기화 및 불러오기
     if "turn_count" not in st.session_state:
         st.session_state.turn_count = 0
 
@@ -309,10 +312,12 @@ elif st.session_state.page == "chat_winter":
 
     affection_score = st.session_state.affection
     
-    # 🚨 [NEW] 상단에 고정될 헤더 컨테이너 (이 안에 들어가는 모든 게 고정됨!)
+    # 🚨 [NEW] 이 컨테이너 전체가 CSS에 의해 화면 상단에 찰싹 붙어서 안 떨어지게 됨!
     sticky_header = st.container()
     with sticky_header:
-        # 버튼 2개와 제목을 가로로 컴팩트하게 배치
+        # 여기에 보이지 않는 앵커(마커)를 박아서 CSS가 이 컨테이너를 찾아내게 만듦
+        st.markdown("<div id='fixed-header-anchor'></div>", unsafe_allow_html=True)
+        
         col1, col2, col3 = st.columns([3, 4, 3])
         with col1:
             if st.button("🔙 로비로", use_container_width=True):
@@ -331,12 +336,11 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.pop("affection", None)
                     st.rerun()
                     
-        # 호감도 게이지바도 헤더 안에 넣어서 항상 보이게 만듦
         progress_val = max(0, min(affection_score, 100)) 
-        st.markdown(f"<div style='font-size:14px; margin-bottom:5px;'>💖 <b>현재 겨울이와의 호감도: {affection_score} / 100</b></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:14px; margin-bottom:5px; margin-top:5px;'>💖 <b>현재 겨울이와의 호감도: {affection_score} / 100</b></div>", unsafe_allow_html=True)
         st.progress(progress_val / 100.0)
 
-    # --- 여기서부터는 스크롤되는 영역 ---
+    # 이 밑에서부터는 자연스럽게 스크롤되는 진짜 본문 영역이야.
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     
