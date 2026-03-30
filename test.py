@@ -13,24 +13,40 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🚨 14가지 상황별 일러스트 지도
-scene_images = {
-    "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
-    "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
-    "아련_문": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%AC%B8%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
-    "아련_벽": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%B2%BD%EC%9D%84%20%EB%93%B1%EC%A7%80%EA%B3%A0%20%EC%84%9C%EC%84%9C%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%A0%95%EB%A9%B4%EC%9D%84%20%EC%A3%BC%EC%8B%9C%ED%95%9C%EB%8B%A4(%EC%B8%A1%EB%A9%B4).png?raw=true",
-    "힘듦": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%20%EB%B2%BD%EC%9D%84%20%ED%9E%98%EB%93%A0%EB%93%AF%EC%9D%B4%20%EA%B8%B0%EB%8C%84%EB%8B%A4.png?raw=true",
-    "당황_숨가쁨": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%95%88.%20%EC%B0%BD%EB%AC%B8%EC%98%86%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.%20%EC%88%A8%EC%9D%84%20%ED%97%90%EB%96%A1%EA%B1%B0%EB%A6%BC.png?raw=true",
-    "취기_웃음": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EB%B3%B4%EB%8A%94%EB%8D%B0%20%EC%B7%A8%EA%B8%B0%EA%B0%80%20%EC%9E%88%EB%8A%94%20%EC%96%BC%EA%B5%B4%EC%97%90%20%EC%9B%83%EA%B3%A0%EC%9E%88%EC%9D%8C.png?raw=true",
-    "슬픔_훌쩍": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%9B%8C%EC%A9%8D%EA%B1%B0%EB%A6%BC.png?raw=true",
-    "침대_누움": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EB%88%84%EC%9B%80(%EC%95%BC%ED%95%9C%EA%B0%81%EB%8F%84).png?raw=true",
-    "침대_앉음": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EC%95%89%EC%95%84%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
-    "침대_요염": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%9A%94%EC%97%BC%ED%95%9C%20%EC%9E%90%EC%84%B8%EB%A5%BC%20%EC%B7%A8%ED%95%98%EB%A9%B4%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
-    "침대_내려다봄": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%82%B4%EB%A0%A4%EB%8B%A4%EB%B4%84.png?raw=true",
-    "포옹_허리": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EC%9D%98%20%ED%97%88%EB%A6%AC%EB%A5%BC%20%EA%BB%B4%EC%95%88%EC%9D%8C(%EC%95%84%EB%9E%AB%EB%8F%84%EB%A6%AC).png?raw=true",
-    "키스": "https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true"
-}
+# 💡 [수정 후: 이 코드를 통째로 복붙해! (네 깃허브 아이디 부분만 수정)]
+# 네 테섭 깃허브 아이디 (예: appppie1717-beep)를 따옴표 안에 정확히 넣어줘!
+YOUR_GITHUB_ID = "appppie1717-beep"
 
+# 스트림릿이 현재 실행 중인 깃허브 저장소 이름을 자동으로 알아내는 창조주의 마법!
+import os
+import streamlit.components.v1 as components
+
+try:
+    # 현재 배포된 스트림릿 앱의 깃허브 정보를 싹 긁어오는 시크릿 함수!
+    app_info = components.get_current_page_config()
+    current_repo_name = app_info["github_repository"] # 예: appppie1717-beep/winter-chat-test
+    github_base_url = f"https://raw.githubusercontent.com/{current_repo_name}/main/images/"
+except:
+    # 정 안 되면 네가 테섭 저장소 이름을 직접 적어둔 걸로 가져오게 하는 안전망! (수동으로 winter-chat-test 입력)
+    github_base_url = f"https://raw.githubusercontent.com/{YOUR_GITHUB_ID}/winter-chat-test/main/images/"
+
+# 🚨 14가지 상황별 일러스트 지도 (자동 경로 버전)
+scene_images = {
+    "기본": github_base_url + "집에서 플레이어를 정면으로 주시함.png?raw=true",
+    "침대_유혹": github_base_url + "새벽. 집안. 침대에 옆으로 누워서 플레이어를 바라봄.(이리와 하는듯한 느낌).png?raw=true",
+    "아련_문": github_base_url + "새벽에 문열고 아련하게 쳐다봄.png?raw=true",
+    "아련_벽": github_base_url + "새벽에 벽을 등지고 서서 아련하게 정면을 주시한다(측면).png?raw=true",
+    "힘듦": github_base_url + "집 벽을 힘든듯이 기댄다.png?raw=true",
+    "당황_숨가쁨": github_base_url + "집안. 창문옆에서 플레이어를 쳐다봄. 숨을 헐떡거림.png?raw=true",
+    "취기_웃음": github_base_url + "집에서 플레이어를 정면으로 보는데 취기가 있는 얼굴에 웃고있음.png?raw=true",
+    "슬픔_훌쩍": github_base_url + "집에서 훌쩍거림.png?raw=true",
+    "침대_누움": github_base_url + "침대에 누움(야한각도).png?raw=true",
+    "침대_앉음": github_base_url + "침대에 앉아서 플레이어를 쳐다봄.png?raw=true",
+    "침대_요염": github_base_url + "침대에서 요염한 자세를 취하면서 플레이어를 쳐다봄.png?raw=true",
+    "침대_내려다봄": github_base_url + "침대에서 플레이어를 내려다봄.png?raw=true",
+    "포옹_허리": github_base_url + "침대에서 플레이어의 허리를 껴안음(아랫도리).png?raw=true",
+    "키스": github_base_url + "키스하는중(남자 얼굴 반쯤 나옴).png?raw=true"
+}
 # 2. 열쇠 꺼내오기
 api_key = st.secrets["GOOGLE_API_KEY"]
 supabase_url = st.secrets["SUPABASE_URL"]
