@@ -8,15 +8,24 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.3] 상단 헤더 숨김 & 로비 탭(친구목록/업데이트) UI 적용
+# 🎨 [디자인 정밀 광택 2.3.1] 사이드바 토글 버튼 복구 및 불필요한 헤더 숨김
 # =====================================================================
 st.markdown("""
     <style>
-    /* 우측 상단 Fork 버튼 및 Streamlit 기본 헤더 완벽 제거 */
-    [data-testid="stHeader"] {display: none;}
+    /* 🛠️ 헤더를 완전히 날리지 않고 배경만 투명하게 처리 (좌측 사이드바 여는 > 버튼은 살려둠) */
+    [data-testid="stHeader"] {
+        background-color: transparent !important;
+    }
+    
+    /* 🛠️ 우측 상단의 거슬리는 툴바(Deploy 버튼, 깃허브 아이콘 등)만 핀셋 제거 */
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
+    /* Streamlit 기본 메뉴 및 Footer 숨김 */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .stDeployButton {display:none;}
+    .stDeployButton {display: none !important;}
     
     /* 📱 카톡 프로필 카드 */
     .profile-card {
@@ -90,7 +99,7 @@ st.markdown("""
         border-radius: 10px !important;
     }
     
-    /* 🚨 [NEW] 탭 UI 예쁘게 커스텀 */
+    /* 🚨 탭 UI 예쁘게 커스텀 */
     .stTabs [data-baseweb="tab-list"] {
         gap: 24px;
     }
@@ -176,7 +185,7 @@ elif st.session_state.page == "lobby":
 
     st.write(f"반갑습니다, **{user_name}**님!")
     
-    # 🚨 [NEW] 탭 생성: 친구 목록 vs 업데이트 내역
+    # 🚨 탭 생성: 친구 목록 vs 업데이트 내역
     tab1, tab2 = st.tabs(["👥 친구 목록", "📢 업데이트 내역"])
 
     # --- 탭 1: 친구 목록 ---
@@ -242,6 +251,10 @@ elif st.session_state.page == "lobby":
         # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.3.1 ] 2026.03.31 (화)**
+            * **[00:17] 🎒 사이드바 UI 버그 핫픽스:** 상단 Fork 버튼을 지우면서 실수로 함께 날아갔던 왼쪽 사이드바 토글 버튼(인벤토리 열기 버튼)을 완벽하게 부활시켰습니다! 이제 다시 언제든 인벤토리와 일기장을 확인할 수 있습니다.
+
+            ---
             **[ v2.3.0 ] 2026.03.30 (월)**
             * **[23:40] 📢 로비 UI 탭 분리:** 기존 채팅방 안에 있던 패치 노트(업데이트 내역)를 밖으로 빼내어 로비 화면에 별도의 탭으로 예쁘게 정리했습니다! 채팅방은 오직 대화에만 몰입할 수 있도록 깔끔해졌습니다.
 
@@ -423,8 +436,6 @@ elif st.session_state.page == "chat_winter":
     st.write(f"💖 **현재 겨울이와의 호감도: {affection_score} / 100**")
     st.progress(progress_val / 100.0)
     st.divider()
-
-    # 🚨 [NEW] 기존에 여기에 있던 패치 노트(expander)는 완전히 삭제해서 채팅창을 깔끔하게 만들었어!
 
     for role, text in st.session_state.chat_history:
         if role == "user":
