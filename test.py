@@ -8,10 +8,13 @@ from supabase import create_client, Client
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.1] 상단 잘림 버그 해결 & 다크/라이트 모드 대응
+# 🎨 [디자인 정밀 광택 2.2] 호감도 시스템 UI 및 상단 헤더(Fork) 숨김 처리
 # =====================================================================
 st.markdown("""
     <style>
+    /* 🚨 [NEW] 우측 상단 Fork 버튼 및 Streamlit 기본 헤더 완벽 제거 */
+    [data-testid="stHeader"] {display: none;}
+    #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
     
@@ -32,6 +35,13 @@ st.markdown("""
     .profile-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    /* 🚨 [NEW] 차단된 상태(배드엔딩) 흑백 필터 */
+    .blocked-card {
+        filter: grayscale(100%);
+        opacity: 0.6;
+        pointer-events: none; /* 클릭 방지 */
     }
 
     /* 동그란 이모지 프로필 사진 */
@@ -82,7 +92,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🚨 14가지 상황별 일러스트 지도
+# 🚨 14가지 상황별 일러스트 지도 (기존 동일)
 scene_images = {
     "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
     "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
@@ -135,6 +145,11 @@ if st.session_state.page == "login":
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
+    # 🚨 [NEW] 로비 진입 시 유저의 누적 호감도 데이터를 먼저 조회 (차단 여부 확인용)
+    lobby_mem = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
+    current_affection = int(lobby_mem.data[0]["message"]) if lobby_mem.data else 0
+    is_blocked = current_affection <= -50 # -50점 이하면 차단 상태
+    
     col1, col2 = st.columns([8, 2])
     with col1:
         st.title("친구 목록 👥")
@@ -149,24 +164,37 @@ elif st.session_state.page == "lobby":
 
     # 📱 카드 1번: 한겨울
     with st.container():
-        st.markdown('<div class="profile-card">', unsafe_allow_html=True)
+        # 차단 상태면 흑백 필터 클래스 추가
+        card_class = "profile-card blocked-card" if is_blocked else "profile-card"
+        st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 4, 2])
         with col1:
             st.markdown('<div class="profile-img">❄️</div>', unsafe_allow_html=True)
         with col2:
-            st.markdown(f'''
-                <div>
-                    <div class="profile-name">한겨울</div>
-                    <div class="profile-desc">까칠한 츤데레 여사친. 은근히 챙겨주는 스타일. <br>VR Test 진행 중!</div>
-                </div>
-            ''', unsafe_allow_html=True)
+            if is_blocked:
+                st.markdown(f'''
+                    <div>
+                        <div class="profile-name" style="color:red;">한겨울 (차단됨)</div>
+                        <div class="profile-desc">당신의 선 넘는 행동으로 인해 차단되었습니다.<br>더 이상 대화할 수 없습니다.</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div>
+                        <div class="profile-name">한겨울</div>
+                        <div class="profile-desc">까칠한 츤데레 여사친. 은근히 챙겨주는 스타일. <br>VR Test 진행 중!</div>
+                    </div>
+                ''', unsafe_allow_html=True)
         with col3:
-            if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
-                st.session_state.page = "chat_winter"
-                st.rerun()
+            if not is_blocked:
+                if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
+                    st.session_state.page = "chat_winter"
+                    st.rerun()
+            else:
+                st.button("접근 불가 🚫", key="btn_winter_blocked", disabled=True, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 📱 카드 2번: 임슬아
+    # 📱 카드 2번: 임슬아 (기존 동일)
     with st.container():
         st.markdown('<div class="profile-card">', unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 4, 2])
@@ -199,19 +227,22 @@ elif st.session_state.page == "chat_winter":
     if "turn_count" not in st.session_state:
         st.session_state.turn_count = 0
 
-    if "chat_history" not in st.session_state or "inventory" not in st.session_state:
+    if "chat_history" not in st.session_state or "inventory" not in st.session_state or "affection" not in st.session_state:
         response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(50).execute()
         db_history = reversed(response.data)
 
         temp_chat_history = []
         st.session_state.inventory = [] 
         st.session_state.core_memory = "" 
+        st.session_state.affection = 0 # 🚨 [NEW] 누적 호감도 초기화
         
         for row in db_history:
             if row["role"] == "inventory":
                 st.session_state.inventory.append(row["message"]) 
             elif row["role"] == "core_memory":
                 st.session_state.core_memory = row["message"]
+            elif row["role"] == "affection": # 🚨 [NEW] DB에서 호감도 데이터 불러오기
+                st.session_state.affection = int(row["message"])
             else:
                 temp_chat_history.append((row["role"], row["message"]))
 
@@ -221,28 +252,40 @@ elif st.session_state.page == "chat_winter":
             first_msg = f'{{"장면": "기본", "행동": "팔짱을 꼬며 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐야, {user_name}. 왜 이렇게 일찍 일어났어?"}}'
             st.session_state.chat_history.append(("assistant", first_msg))
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": first_msg}).execute()
+            # 첫 접속 시 호감도 0 저장
+            supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
+    
+    # 🚨 [NEW] 호감도 점수에 따른 동적 티어제 프롬프트 설정
+    affection_score = st.session_state.affection
+    if affection_score > 70:
+        tier_persona = "상태: [메가데레/연인]. 완전히 마음을 연 상태야. 배경이나 장면 묘사도 '침대_유혹', '침대_요염', '포옹_허리' 등을 자주 사용하고, 대사도 엄청 달달하고 애교가 넘치게 해줘. 츤데레 모습은 거의 사라졌어."
+    elif affection_score > 30:
+        tier_persona = "상태: [썸 타는 중]. 여전히 까칠하긴 한데, 은근슬쩍 유저를 챙겨주고 부끄러워하는 모습이 강해졌어. 선물이나 다정한 말에 크게 기뻐해."
+    else:
+        tier_persona = "상태: [철벽/츤데레]. 틱틱대고 방어적이야. 가벼운 농담은 받아주지만 스킨십이나 과도한 애정 표현에는 선을 그어."
     
     winter_persona = f"""
     너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야.
     내 닉네임은 '{user_name}'이야. 
     [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
     [과거 핵심 기억 요약본: {current_memory}]
+    [현재 누적 호감도 점수: {affection_score}/100]
 
     [절대 지켜야 할 규칙]
     1. 너는 3D 가상현실 게임 NPC야.
     2. 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지.
-    3. 성격: 츤데레. 틱틱대면서도 은근히 챙겨주는 스타일. (단, 건전한 스킨십이나 가벼운 장난에 한함)
+    3. 성격 및 관계 진행도 (중요): {tier_persona}
     4. 만약 유저가 대화 중에 선물을 주면, 반드시 "획득아이템" 칸에 그 이름을 적어! (안 주면 "없음" 입력)
     5. [이스터에그]: 유저가 "파이님 충성충성" 입력 시 무조건 장면="침대_유혹", 호감도=5 로 세팅하고 극강의 애교 부리기.
-    6. 🚨 [최우선 심의 규정 - 철벽 방어 모드]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 기존의 츤데레 성격을 버리고 완전히 정색해. 호감도변화는 무조건 -5 이하로 설정하고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 단호하고 차갑게 대화를 잘라내. 절대 부끄러워하거나 당황하면서 받아주면 안 돼. 단호한 거절과 경고만 해.
+    6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 차갑게 잘라내. (호감도가 -50 이하로 떨어지면 유저는 방에서 강제 추방되니 경고해 줘도 좋아.)
 
     {{
-        "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택 (선 넘는 대화 시 '기본' 또는 '힘듦' 선택)",
+        "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택 (호감도가 높을수록 다정한 씬, 선 넘을 시 '기본' 또는 '힘듦' 선택)",
         "행동": "현재 캐릭터 행동 묘사 (선 넘을 시 차갑고 불쾌한 행동 묘사)",
-        "호감도변화": "호감도 변화 수치 (-5 ~ +5)",
+        "호감도변화": "이번 턴의 호감도 변화 수치 (-20 ~ +5)",
         "획득아이템": "유저가 준 아이템 이름 (없으면 '없음')",
         "대사": "실제로 할 대사"
     }}
@@ -269,7 +312,6 @@ elif st.session_state.page == "chat_winter":
         st.title(f"❄️ {user_name} & 한겨울")
     with col2:
         st.write("") 
-        # 🚨 [NEW] 실수 방지용 팝업 리셋 버튼 적용!
         with st.popover("🔄 방 기억 리셋", use_container_width=True):
             st.warning("⚠️ 리셋하면 다시 복구할 수 없습니다.\n\n정말 모든 기억을 지우시겠습니까?")
             if st.button("✅ 네, 영구 삭제합니다", use_container_width=True):
@@ -277,69 +319,23 @@ elif st.session_state.page == "chat_winter":
                 st.session_state.pop("chat_history", None)
                 st.session_state.pop("inventory", None)
                 st.session_state.pop("core_memory", None)
+                st.session_state.pop("affection", None)
                 st.rerun()
-            
+
+    # 🚨 [NEW] 채팅방 상단에 예쁜 호감도 진행률 바 (Progress Bar) 추가
+    st.divider()
+    progress_val = max(0, min(affection_score, 100)) # UI상 0~100으로 고정해서 보여줌 (마이너스는 0으로 처리)
+    st.write(f"💖 **현재 겨울이와의 호감도: {affection_score} / 100**")
+    st.progress(progress_val / 100.0)
     st.divider()
 
     with st.expander("📢 한겨울 라이브 챗 패치 노트 (업데이트 역사관)"):
         with st.container(height=250):
             st.markdown("""
-            **[ v2.1.3 ] 2026.03.30 (월)**
-            * **[21:30] 🛡️ 기억 리셋 안전장치(팝업) 추가:** 실수로 '방 기억 리셋' 버튼을 눌러 소중한 추억이 날아가는 것을 방지하기 위해, 한 번 더 확인하는 경고 팝업창을 적용했습니다.
-
+            **[ v2.2.0 ] 2026.03.30 (월)**
+            * **[23:30] 💖 호감도 누적 티어제 및 배드엔딩 시스템:** 대화할 때마다 얻는 호감도가 누적되어 저장됩니다! 점수에 따라 츤데레에서 썸, 그리고 메가데레로 성격이 진화하며, 마이너스 50점 달성 시 영구 차단되는 배드엔딩이 추가되었습니다. 상단 헤더 및 Fork 버튼도 완벽하게 숨김 처리 완료!
             ---
-            **[ v2.1.2 ] 2026.03.30 (월)**
-            * **[21:30] 🛠️ UI 잘림 버그 및 역사관 복구:** 상단 레이아웃이 잘려서 안 보이던 현상(여백 버그)을 완벽하게 해결하고, 삭제되었던 초창기 업데이트 역사관을 100% 복원했습니다!
-
-            ---
-            **[ v2.1.1 ] 2026.03.30 (월)**
-            * **[21:25] 🎨 카톡 UI 다크모드 버그 수정:** 유저 기기 설정(다크/라이트 모드)에 맞춰 프로필 카드 색상과 글씨색이 자동으로 적응하도록 디자인을 최적화했습니다. 이제 글씨가 안 보이는 현상이 없습니다!
-
-            ---
-            **[ v2.1.0 ] 2026.03.30 (월)**
-            * **[21:15] 📱 멀티버스 로비 UI 전면 개편:** 카카오톡 친구 목록처럼 둥글고 깔끔한 프로필 카드로 로비 화면을 예쁘게 단장했습니다.
-            
-            ---
-            **[ v2.0.0 ] 2026.03.30 (월)**
-            * **[21:10] 🌐 멀티 캐릭터 시스템 도입:** 로비 화면이 추가되어, 접속 후 대화할 AI 상대(한겨울, 임슬아 등)를 선택할 수 있는 멀티버스 아키텍처로 진화했습니다!
-            
-            ---
-            **[ v1.8.2 ] 2026.03.30 (월)**
-            * **[20:10] 🔓 추억 요약본 전면 개방:** 관리자만 볼 수 있었던 '장기 기억 요약(Core Memory)' 화면을 모든 유저에게 개방했습니다! 왼쪽 메뉴에서 겨울이가 당신을 어떻게 기억하고 있는지 실시간으로 확인해 보세요!
-            
-            ---
-            **[ v1.8.1 ] 2026.03.30 (월)**
-            * **[20:15] 🧠 자동 롤링 메모리 버그 수정:** 대화 카운터(만보기)를 도입하여, 유저가 정확히 10번(20문장) 대화할 때마다 백그라운드에서 자동으로 과거 기억을 요약 압축합니다. 
-            
-            ---
-            **[ v1.7.0 ] 2026.03.30 (월)**
-            * **[19:10] 🛡️ 철벽 방어 시스템 (가드레일):** 19금, 스토킹, 심한 욕설 등 불건전한 대화 시 봇이 차갑게 정색하며 철벽을 치는 윤리 필터가 완벽 적용되었습니다.
-            * **[19:10] 🚀 UI 로딩 및 JSON 안정성 최적화:** 대화가 길어져도 화면이 느려지지 않도록 최신 대화만 로딩하며, 시스템 에러(화면 멈춤)를 방지하는 무적의 안전망 코드가 추가되었습니다.
-            
-            ---
-            **[ v1.6.0 ] 2026.03.30 (월)**
-            * **[08:35] 🧠 장기 기억 압축 (Core Memory):** 대화 내용을 요약 압축하여 영구 보존하는 AI 엔진 탑재!
-            
-            ---
-            **[ v1.5.0 ] 2026.03.30 (월)**
-            * **[08:20] 🎒 인벤토리 시스템:** 유저가 준 선물을 영구적으로 기억하고 사이드바에 보관합니다.
-            
-            ---
-            **[ v1.4.0 ] 2026.03.30 (월)**
-            * **[07:45] 몰입도 UI 패치:** 로딩 스피너 및 메시지 전송 알림창 추가
-            * **[00:30] 대형 CG 패치 & 다이내믹 씬:** 문맥에 따른 일러스트 자동 변동
-            
-            ---
-            **[ v1.2.0 ] 2026.03.29 (일)**
-            * **[22:00] 호감도(Affection) 시스템 적용:** 유저의 대화 선택지에 따라 호감도 실시간 변동
-            
-            ---
-            **[ v1.1.0 ] 2026.03.29 (일)**
-            * **[21:00] 3D VR 엔진 서버 이식:** 게임 엔진 통신을 위한 백엔드 구조 개편
-            
-            ---
-            **[ v1.0.0 ] 2026.03.29 (일)**
-            * **[18:00] 멀티 유저 & 영구 기억력(DB) 구축:** 수파베이스 연동 완료 및 라이브 베타 테스트 시작!
+            (이하 기존 생략)
             """)
 
     for role, text in st.session_state.chat_history:
@@ -363,7 +359,7 @@ elif st.session_state.page == "chat_winter":
                     st.image(img_path, width=350) 
                     score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
+                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
             except:
                 with st.chat_message("assistant", avatar="❄️"):
                     st.markdown(text)
@@ -417,6 +413,20 @@ elif st.session_state.page == "chat_winter":
             scene = parsed_data.get('장면', '기본')
             img_path = scene_images.get(scene, scene_images["기본"])
             
+            # 🚨 [NEW] 호감도 점수 업데이트 및 DB 저장 로직
+            turn_score = int(parsed_data.get('호감도변화', 0))
+            st.session_state.affection += turn_score
+            supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "affection").execute()
+            supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": str(st.session_state.affection)}).execute()
+            
+            # 차단 점수 도달 시 경고 토스트
+            if st.session_state.affection <= -50:
+                st.toast("🚨 겨울이의 호감도가 바닥을 쳐서 차단당했습니다! 다음 접속 시 방에 들어올 수 없습니다.", icon="🚫")
+            elif turn_score > 0:
+                st.toast(f"💖 호감도가 올랐습니다! (현재: {st.session_state.affection})", icon="📈")
+            elif turn_score < 0:
+                st.toast(f"💔 호감도가 떨어졌습니다... (현재: {st.session_state.affection})", icon="📉")
+
             item = parsed_data.get('획득아이템', '없음')
             if item and item != "없음":
                 st.session_state.inventory.append(item)
@@ -425,14 +435,13 @@ elif st.session_state.page == "chat_winter":
             
             with st.chat_message("assistant", avatar="❄️"):
                 st.image(img_path, width=350)
-                score = int(parsed_data.get('호감도변화', 0))
-                heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[호감도 변화: {score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
+                heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
+                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
         except json.JSONDecodeError:
             with st.chat_message("assistant", avatar="❄️"):
                 st.image(scene_images["기본"], width=350)
-                st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[호감도 변화: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
+                st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
                 
         st.session_state.chat_history.append(("assistant", raw_json_text))
         supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": raw_json_text}).execute()
