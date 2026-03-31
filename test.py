@@ -20,8 +20,6 @@ st.markdown("""
     .stDeployButton { display: none !important; visibility: hidden !important; }
     .stAppDeployButton { display: none !important; visibility: hidden !important; }
 
-    /* 화면 전체를 먹통으로 만들었던 망할 fixed CSS 코드는 완전히 삭제했습니다! */
-
     /* 📱 카톡 프로필 카드 */
     .profile-card {
         border: 1px solid var(--faded-text40);
@@ -245,15 +243,17 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v2.4.6 ] 2026.03.31 (화)**
+            * **[19:55] 📱 UI/UX 최적화:** 채팅창 상단에 고정되어 있던 메뉴 버튼들(가방, 호감도 등)을 채팅 입력창 바로 위 하단으로 이동하여 모바일/PC 접근성을 극대화했습니다.
+            * **[19:55] 🍫 아이템 상호작용 강화:** AI가 아이템을 소모할 때, DB에서만 삭제되는 것이 아니라 대사와 행동 묘사에서도 직접 사용하는 티를 내도록 프롬프트 룰을 강화했습니다.
+
+            ---
             **[ v2.4.5 ] 2026.03.31 (화)**
             * **[19:30] 🛡️ 서버 안정화 패치:** 제미나이 AI 서버 통신 불안정으로 인해 발생하던 튕김(에러 코드) 현상을 방어하는 예외 처리(Try-Except) 로직을 전면 도입했습니다.
 
+            ---
             **[ v2.4.4 ] 2026.03.31 (화)**
             * **[01:00] 🎒 아이템 소모/사용 기능 추가:** 겨울이의 인벤토리 시스템이 업데이트되었습니다! 이제 유저가 선물한 아이템을 겨울이가 특정 상황에서 자연스럽게 꺼내서 사용하거나 먹습니다. 
-
-            ---
-            **[ v2.4.3 ] 2026.03.31 (화)**
-            * **[00:47] 🚨 치명적 버그 수정! 대화창 먹통 현상 해결:** 화면 상단에 메뉴를 억지로 고정시키려다 전체 앱의 스크롤과 마우스 클릭을 얼려버렸던 망할 CSS 코드를 완전히 폐기하고 순정 상태로 되돌렸습니다.
             """)
 
 # =====================================================================
@@ -296,6 +296,75 @@ elif st.session_state.page == "chat_winter":
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     affection_score = st.session_state.affection
     
+    st.title(f"❄️ {user_name} & 한겨울")
+    st.divider()
+    
+    if affection_score > 70:
+        tier_persona = "상태: [메가데레/연인]. 완전히 마음을 연 상태야. 배경이나 장면 묘사도 '침대_유혹', '침대_요염', '포옹_허리' 등을 자주 사용하고, 대사도 엄청 달달하고 애교가 넘치게 해줘. 츤데레 모습은 거의 사라졌어."
+    elif affection_score > 30:
+        tier_persona = "상태: [썸 타는 중]. 여전히 까칠하긴 한데, 은근슬쩍 유저를 챙겨주고 부끄러워하는 모습이 강해졌어. 선물이나 다정한 말에 크게 기뻐해."
+    else:
+        tier_persona = "상태: [철벽/츤데레]. 틱틱대고 방어적이야. 가벼운 농담은 받아주지만 스킨십이나 과도한 애정 표현에는 선을 그어."
+    
+    # 🚨 프롬프트 7번 강화: 사용 시 무조건 행동과 대사에 먹는 티를 내라!
+    winter_persona = f"""
+    너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야.
+    너의 생일은 7월 18일 이야.
+    내 닉네임은 '{user_name}'이야. 
+    [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
+    [과거 핵심 기억 요약본: {current_memory}]
+    [현재 누적 호감도 점수: {affection_score}/100]
+
+    [절대 지켜야 할 규칙]
+    1. 너는 3D 가상현실 게임 NPC야.
+    2. 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지.
+    3. 성격 및 관계 진행도 (중요): {tier_persona}
+    4. 만약 유저가 대화 중에 선물을 주면, 반드시 "획득아이템" 칸에 그 이름을 적어! (안 주면 "없음" 입력)
+    5. [이스터에그]: 유저가 "아윤" 입력 시 무조건 호감도+5 로 세팅하고 극강의 애교 부리기.
+    6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, 차갑게 잘라내.
+    7. 🎒 [아이템 명시적 사용 규칙]: 현재 인벤토리({current_items})에 있는 음식이나 물건을 사용할 상황이 생기면, "사용아이템" 칸에 이름을 적어. **그리고 반드시 "행동"과 "대사"에서 그 아이템을 가방에서 꺼내서 먹거나 사용하는 모습을 아주 생생하게 묘사해! (예: 포장지를 뜯으며 오물오물 먹는다, 유저가 준 립스틱을 발라본다 등)**
+
+    {{
+        "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택 (호감도가 높을수록 다정한 씬, 선 넘을 시 '기본' 또는 '힘듦' 선택)",
+        "행동": "현재 캐릭터 행동 묘사 (선 넘을 시 차갑고 불쾌한 행동 묘사)",
+        "호감도변화": "이번 턴의 호감도 변화 수치 (-20 ~ +5)",
+        "획득아이템": "유저가 새로 준 아이템 이름 (없으면 '없음')",
+        "사용아이템": "보관함에서 꺼내 쓰거나 먹은 아이템 이름 (없으면 '없음')",
+        "대사": "실제로 할 대사"
+    }}
+    """
+
+    # --- 채팅 내역 렌더링 ---
+    for role, text in st.session_state.chat_history:
+        if role == "user":
+            with st.chat_message("user"):
+                st.markdown(text)
+        else:
+            try:
+                clean_text = text.strip()
+                if clean_text.startswith("```json"):
+                    clean_text = clean_text[7:]
+                if clean_text.endswith("```"):
+                    clean_text = clean_text[:-3]
+                clean_text = clean_text.strip()
+                
+                data = json.loads(clean_text)
+                scene = data.get('장면', '기본')
+                img_path = scene_images.get(scene, scene_images["기본"])
+                
+                with st.chat_message("assistant", avatar="❄️"):
+                    st.image(img_path, width=350) 
+                    score = int(data.get('호감도변화', 0))
+                    heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
+                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
+            except:
+                with st.chat_message("assistant", avatar="❄️"):
+                    st.markdown(text)
+
+    # =====================================================================
+    # 👇 버튼 UI 이사 완료! (채팅 내역 바로 아래, 채팅 입력창 바로 위)
+    # =====================================================================
+    st.write("") # 살짝 여백 주기
     with st.container():
         m1, m2, m3, m4 = st.columns(4)
         
@@ -335,70 +404,8 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.pop("core_memory", None)
                     st.session_state.pop("affection", None)
                     st.rerun()
-    
-    st.title(f"❄️ {user_name} & 한겨울")
-    st.divider()
-    
-    if affection_score > 70:
-        tier_persona = "상태: [메가데레/연인]. 완전히 마음을 연 상태야. 배경이나 장면 묘사도 '침대_유혹', '침대_요염', '포옹_허리' 등을 자주 사용하고, 대사도 엄청 달달하고 애교가 넘치게 해줘. 츤데레 모습은 거의 사라졌어."
-    elif affection_score > 30:
-        tier_persona = "상태: [썸 타는 중]. 여전히 까칠하긴 한데, 은근슬쩍 유저를 챙겨주고 부끄러워하는 모습이 강해졌어. 선물이나 다정한 말에 크게 기뻐해."
-    else:
-        tier_persona = "상태: [철벽/츤데레]. 틱틱대고 방어적이야. 가벼운 농담은 받아주지만 스킨십이나 과도한 애정 표현에는 선을 그어."
-    
-    winter_persona = f"""
-    너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야.
-    너의 생일은 7월 18일 이야.
-    내 닉네임은 '{user_name}'이야. 
-    [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
-    [과거 핵심 기억 요약본: {current_memory}]
-    [현재 누적 호감도 점수: {affection_score}/100]
 
-    [절대 지켜야 할 규칙]
-    1. 너는 3D 가상현실 게임 NPC야.
-    2. 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지.
-    3. 성격 및 관계 진행도 (중요): {tier_persona}
-    4. 만약 유저가 대화 중에 선물을 주면, 반드시 "획득아이템" 칸에 그 이름을 적어! (안 주면 "없음" 입력)
-    5. [이스터에그]: 유저가 "아윤" 입력 시 무조건 호감도+5 로 세팅하고 극강의 애교 부리기.
-    6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 차갑게 잘라내. (호감도가 -50 이하로 떨어지면 유저는 방에서 강제 추방되니 경고해 줘도 좋아.)
-    7. 🎒 [아이템 사용]: 현재 인벤토리({current_items})에 있는 음식이나 물건을 먹거나 사용할 자연스러운 상황이 생기면, "사용아이템" 칸에 해당 아이템 이름을 정확히 적어줘. (사용할 일이 없으면 "없음")
-
-    {{
-        "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택 (호감도가 높을수록 다정한 씬, 선 넘을 시 '기본' 또는 '힘듦' 선택)",
-        "행동": "현재 캐릭터 행동 묘사 (선 넘을 시 차갑고 불쾌한 행동 묘사)",
-        "호감도변화": "이번 턴의 호감도 변화 수치 (-20 ~ +5)",
-        "획득아이템": "유저가 새로 준 아이템 이름 (없으면 '없음')",
-        "사용아이템": "보관함에서 꺼내 쓰거나 먹은 아이템 이름 (없으면 '없음')",
-        "대사": "실제로 할 대사"
-    }}
-    """
-
-    for role, text in st.session_state.chat_history:
-        if role == "user":
-            with st.chat_message("user"):
-                st.markdown(text)
-        else:
-            try:
-                clean_text = text.strip()
-                if clean_text.startswith("```json"):
-                    clean_text = clean_text[7:]
-                if clean_text.endswith("```"):
-                    clean_text = clean_text[:-3]
-                clean_text = clean_text.strip()
-                
-                data = json.loads(clean_text)
-                scene = data.get('장면', '기본')
-                img_path = scene_images.get(scene, scene_images["기본"])
-                
-                with st.chat_message("assistant", avatar="❄️"):
-                    st.image(img_path, width=350) 
-                    score = int(data.get('호감도변화', 0))
-                    heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
-            except:
-                with st.chat_message("assistant", avatar="❄️"):
-                    st.markdown(text)
-
+    # 채팅 입력창
     if user_input := st.chat_input("겨울이에게 메시지 보내기"):
         st.toast('겨울이가 당신의 메시지를 읽고 고민 중입니다...', icon='👀')
         
@@ -424,7 +431,6 @@ elif st.session_state.page == "chat_winter":
             role = "model" if r == "assistant" else "user"
             contents.append(types.Content(role=role, parts=[types.Part.from_text(text=t)]))
 
-        # 🛡️ 1차 방어막: 제미나이 답변 생성 시 통신 에러 방지
         try:
             with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
                 response = client.models.generate_content(
@@ -439,9 +445,8 @@ elif st.session_state.page == "chat_winter":
             
         except Exception as e:
             st.error("앗! 제미나이 AI 서버가 잠깐 숨을 고르고 있어요. 다시 메시지를 보내주세요! 🚨")
-            st.stop() # 에러 시 여기서 코드를 멈춰서 빨간 글씨가 안 뜨게 함
+            st.stop()
         
-        # 🛡️ 2차 방어막: JSON 파싱 및 데이터 저장 시 에러 방지
         try:
             clean_json_text = raw_json_text.strip()
             if clean_json_text.startswith("```json"):
@@ -488,7 +493,7 @@ elif st.session_state.page == "chat_winter":
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
                 st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
-        except Exception as e: # 단순히 JSON 에러가 아니라 모든 에러를 방어
+        except Exception as e:
             with st.chat_message("assistant", avatar="❄️"):
                 st.image(scene_images["기본"], width=350)
                 st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
@@ -498,7 +503,6 @@ elif st.session_state.page == "chat_winter":
         
         st.session_state.turn_count += 1
         
-        # 🛡️ 3차 방어막: 10턴째 장기 기억 요약 시 통신 에러 방어
         if st.session_state.turn_count >= 10: 
             with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
                 try:
@@ -525,9 +529,8 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.core_memory = summary_response.text
                     st.toast("🧠 겨울이의 장기 기억력이 업데이트되었습니다!", icon="✨")
                     
-                    st.session_state.turn_count = 0 # 성공했을 때만 0으로 초기화
+                    st.session_state.turn_count = 0 
                 except Exception as e:
-                    # 요약에 실패해도 에러 코드를 띄우지 않고 자연스럽게 다음 턴으로 미룸
                     st.toast("⚠️ 기억 정리에 잠깐 실패했어요. 다음 턴에 다시 시도할게요!", icon="⚠️")
 
         st.rerun()
