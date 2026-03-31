@@ -12,7 +12,7 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.5.1] 채팅창 보호색 버그 완벽 사살 & 통합 UI
+# 🎨 [디자인 정밀 광택 2.6.2] 채팅창 보호색 픽스 + 모바일 하단 메뉴 완벽 고정
 # =====================================================================
 
 # 테마에 따른 CSS 동적 생성
@@ -290,9 +290,7 @@ elif st.session_state.page == "lobby":
             st.markdown("""
             **[ v2.6.2 ] 2026.03.31 (화)**
             * **[21:30] ❄️ 겨울이 호감도 감점 로직 강화:** 유저가 얄밉게 굴거나 서운하게 할 때도 더 현실적으로 호감도가 깎이도록 페널티 시스템을 깐깐하게 재조정했습니다.
-
-            **[ v2.6.1 ] 2026.03.31 (화)**
-            * **[21:20] 🛠️ UI 위치 원상복구:** 채팅창 상단으로 잘못 올라갔던 모바일 메뉴 버튼을 다시 채팅창 최하단(입력창 바로 위)으로 수정 배치했습니다.
+            * **[21:35] 🛠️ UI 위치 최종 고정:** 메뉴 팝업이 스크롤 위로 올라가던 문제를 해결하고 채팅 입력창 바로 위에 완벽하게 고정시켰습니다.
 
             **[ v2.6.0 ] 2026.03.31 (화)**
             * **[21:15] ❄️ 겨울이 AI 영점 조절 완료:** 실제 인물 '아윤'님의 인터뷰 데이터를 기반으로 한겨울의 성격을 재조정했습니다.
@@ -342,62 +340,6 @@ elif st.session_state.page == "chat_winter":
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     affection_score = st.session_state.affection
     
-    # =====================================================================
-    # 👇 [모바일 UI 최적화] 채팅 상단 서랍장 메뉴 (카멜레온 버그 및 체크박스 픽스 완료)
-    # =====================================================================
-    st.write("") 
-    with st.container():
-        with st.popover("⚙️ 메뉴 열기", use_container_width=True):
-            
-            # 1. 로비 & 테마 버튼
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                if st.button("🔙 로비로 이동", use_container_width=True):
-                    st.session_state.page = "lobby"
-                    st.rerun()
-            with col_m2:
-                theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
-                if st.button(theme_label, use_container_width=True):
-                    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-                    st.rerun()
-            
-            st.divider()
-            
-            # 2. 호감도 상태창
-            st.subheader("💖 현재 호감도")
-            progress_val = max(0, min(affection_score, 100)) 
-            st.write(f"**겨울이와의 점수: {affection_score} / 100**")
-            st.progress(progress_val / 100.0)
-            
-            st.divider()
-            
-            # 3. 가방 & 일기장
-            col_inv, col_mem = st.columns(2)
-            with col_inv:
-                st.subheader("🎒 보관함")
-                if st.session_state.inventory:
-                    for item in st.session_state.inventory:
-                        st.success(f"🎁 {item}")
-                else:
-                    st.info("비어있음")
-            with col_mem:
-                st.subheader("🧠 일기장")
-                st.info(st.session_state.core_memory if st.session_state.core_memory else "기억 없음")
-            
-            st.divider()
-            
-            # 4. 기억 포맷 (체크박스 안전장치 추가)
-            st.subheader("🗑️ 기억 리셋")
-            delete_confirm = st.checkbox("🚨 진짜 기억을 삭제하시겠습니까? (되돌릴 수 없습니다)")
-            if delete_confirm:
-                if st.button("✅ 영구 삭제 실행", use_container_width=True):
-                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                    st.session_state.pop("chat_history", None)
-                    st.session_state.pop("inventory", None)
-                    st.session_state.pop("core_memory", None)
-                    st.session_state.pop("affection", None)
-                    st.rerun()
-
     st.title(f"❄️ {user_name} & 한겨울")
     st.divider()
     
@@ -445,7 +387,7 @@ elif st.session_state.page == "chat_winter":
     }}
     """
 
-    # 대화 내역 렌더링
+    # 1. 대화 내역 렌더링 (가장 먼저 화면 상단에 그려짐)
     for role, text in st.session_state.chat_history:
         if role == "user":
             with st.chat_message("user"):
@@ -472,7 +414,63 @@ elif st.session_state.page == "chat_winter":
                 with st.chat_message("assistant", avatar="❄️"):
                     st.markdown(text)
 
-    # 채팅 입력창
+    # =====================================================================
+    # 👇 [모바일 UI 최적화] 채팅 내역 바로 아래, 입력창 바로 위 (진짜 완벽 고정)
+    # =====================================================================
+    st.write("") 
+    with st.container():
+        with st.popover("⚙️ 메뉴 열기", use_container_width=True):
+            
+            # 로비 & 테마 버튼
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                if st.button("🔙 로비로 이동", use_container_width=True):
+                    st.session_state.page = "lobby"
+                    st.rerun()
+            with col_m2:
+                theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
+                if st.button(theme_label, use_container_width=True):
+                    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+                    st.rerun()
+            
+            st.divider()
+            
+            # 호감도 상태창
+            st.subheader("💖 현재 호감도")
+            progress_val = max(0, min(affection_score, 100)) 
+            st.write(f"**겨울이와의 점수: {affection_score} / 100**")
+            st.progress(progress_val / 100.0)
+            
+            st.divider()
+            
+            # 가방 & 일기장
+            col_inv, col_mem = st.columns(2)
+            with col_inv:
+                st.subheader("🎒 보관함")
+                if st.session_state.inventory:
+                    for item in st.session_state.inventory:
+                        st.success(f"🎁 {item}")
+                else:
+                    st.info("비어있음")
+            with col_mem:
+                st.subheader("🧠 일기장")
+                st.info(st.session_state.core_memory if st.session_state.core_memory else "기억 없음")
+            
+            st.divider()
+            
+            # 기억 포맷 (체크박스 안전장치)
+            st.subheader("🗑️ 기억 리셋")
+            delete_confirm = st.checkbox("🚨 진짜 기억을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+            if delete_confirm:
+                if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                    st.session_state.pop("chat_history", None)
+                    st.session_state.pop("inventory", None)
+                    st.session_state.pop("core_memory", None)
+                    st.session_state.pop("affection", None)
+                    st.rerun()
+
+    # 3. 채팅 입력창 (가장 마지막에 렌더링)
     if user_input := st.chat_input("겨울이에게 메시지 보내기"):
         st.toast('겨울이가 당신의 메시지를 읽고 고민 중입니다...', icon='👀')
         
