@@ -12,7 +12,7 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.6.2] 채팅창 보호색 픽스 + 모바일 하단 메뉴 완벽 고정
+# 🎨 [디자인 정밀 광택 2.6.3] 로비 프로필 카드 보호색(카멜레온) 버그 완벽 사살
 # =====================================================================
 
 # 테마에 따른 CSS 동적 생성
@@ -23,7 +23,7 @@ if st.session_state.theme == "light":
     [data-testid="stAppViewContainer"] { background-color: #F4F4F9 !important; }
     [data-testid="stHeader"] { background-color: #F4F4F9 !important; }
     
-    /* 👇 [최종 픽스] 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (라이트 모드) */
+    /* 👇 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (라이트 모드) */
     [data-testid="stBottom"] > div { background-color: #F4F4F9 !important; }
     [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
@@ -39,7 +39,10 @@ if st.session_state.theme == "light":
     /* 팝업(메뉴) 내부 테마 및 테두리 완벽 수정 */
     div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
     div[data-testid="stPopoverBody"] { background-color: #FFFFFF !important; color: #1E1E1E !important; }
-    h1, h2, h3, h4, h5, h6, p, span, label, li { color: #1E1E1E !important; }
+    
+    /* 👇 [최종 픽스] 로비 텍스트(이름, 설명)도 강제 색상 지정에 포함! */
+    h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #1E1E1E !important; }
+    
     .profile-card { background-color: #FFFFFF !important; border-color: #DDDDDD !important; }
     .stButton>button, .stPopover>div>button { background-color: #FFFFFF !important; color: #1E1E1E !important; border: 1px solid #DDDDDD !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -52,7 +55,7 @@ else:
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     
-    /* 👇 [최종 픽스] 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (다크 모드) */
+    /* 👇 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (다크 모드) */
     [data-testid="stBottom"] > div { background-color: #0E1117 !important; }
     [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
@@ -68,7 +71,10 @@ else:
     /* 팝업(메뉴) 내부 테마 및 테두리 */
     div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
     div[data-testid="stPopoverBody"] { background-color: #262730 !important; color: #FAFAFA !important; }
-    h1, h2, h3, h4, h5, h6, p, span, label, li { color: #FAFAFA !important; }
+    
+    /* 👇 [최종 픽스] 로비 텍스트(이름, 설명)도 강제 색상 지정에 포함! */
+    h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #FAFAFA !important; }
+    
     .profile-card { background-color: #262730 !important; border-color: #444444 !important; }
     .stButton>button, .stPopover>div>button { background-color: #262730 !important; color: #FAFAFA !important; border: 1px solid #444444 !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -288,6 +294,9 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v2.6.3 ] 2026.03.31 (화)**
+            * **[21:45] 📱 로비 텍스트 카멜레온 픽스:** 로비의 프로필 카드 이름과 설명 텍스트도 테마에 맞게 정상적으로 보이도록 CSS를 보완했습니다.
+            
             **[ v2.6.2 ] 2026.03.31 (화)**
             * **[21:30] ❄️ 겨울이 호감도 감점 로직 강화:** 유저가 얄밉게 굴거나 서운하게 할 때도 더 현실적으로 호감도가 깎이도록 페널티 시스템을 깐깐하게 재조정했습니다.
             * **[21:35] 🛠️ UI 위치 최종 고정:** 메뉴 팝업이 스크롤 위로 올라가던 문제를 해결하고 채팅 입력창 바로 위에 완벽하게 고정시켰습니다.
@@ -340,9 +349,6 @@ elif st.session_state.page == "chat_winter":
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     affection_score = st.session_state.affection
     
-    st.title(f"❄️ {user_name} & 한겨울")
-    st.divider()
-    
     # 🧠 [아윤 모티브 100% 반영 & 호감도 깐깐하게 채점] 겨울이 성격 프롬프트
     if affection_score > 70:
         tier_persona = "상태: [메가데레/연인]. 말투가 훨씬 부드러워지고 더 자주 환하게 웃어. 유저를 완벽하게 믿고 챙겨줘. '침대_유혹', '포옹_허리' 같은 연출을 쓰며 애정 표현을 숨기지 않아."
@@ -388,6 +394,9 @@ elif st.session_state.page == "chat_winter":
     """
 
     # 1. 대화 내역 렌더링 (가장 먼저 화면 상단에 그려짐)
+    st.title(f"❄️ {user_name} & 한겨울")
+    st.divider()
+    
     for role, text in st.session_state.chat_history:
         if role == "user":
             with st.chat_message("user"):
