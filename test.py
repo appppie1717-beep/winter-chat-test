@@ -12,17 +12,32 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.4.7] 모바일 최적화 메뉴 & 다크/라이트 테마 인젝션
+# 🎨 [디자인 정밀 광택 2.5.0] 텍스트 카멜레온 픽스 & 누적 일기장 도입
 # =====================================================================
 
 # 테마에 따른 CSS 동적 생성
 if st.session_state.theme == "light":
     theme_css = """
     <style>
+    /* 전체 배경 및 헤더 */
     [data-testid="stAppViewContainer"] { background-color: #F4F4F9 !important; }
     [data-testid="stHeader"] { background-color: #F4F4F9 !important; }
+    
+    /* 👇 하단 채팅 입력창 구역: OS 테마 충돌 완벽 방어 (검은 글씨 강제) */
+    [data-testid="stBottom"] > div { background-color: #F4F4F9 !important; }
+    [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; }
+    [data-testid="stChatInput"] textarea { color: #000000 !important; caret-color: #000000 !important; }
+    [data-testid="stChatInput"] textarea::placeholder { color: #888888 !important; }
+    [data-testid="stChatInput"] svg { fill: #000000 !important; } 
+    
+    /* 팝업(메뉴) 내부 테마 및 테두리 완벽 수정 */
+    div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
+    div[data-testid="stPopoverBody"] { background-color: #FFFFFF !important; color: #1E1E1E !important; }
+    
+    /* 텍스트 색상들 */
     h1, h2, h3, h4, h5, h6, p, span, label, li { color: #1E1E1E !important; }
-    div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; }
+    
+    /* 카드 및 버튼 */
     .profile-card { background-color: #FFFFFF !important; border-color: #DDDDDD !important; }
     .stButton>button, .stPopover>div>button { background-color: #FFFFFF !important; color: #1E1E1E !important; border: 1px solid #DDDDDD !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -31,10 +46,25 @@ if st.session_state.theme == "light":
 else:
     theme_css = """
     <style>
+    /* 전체 배경 및 헤더 */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
+    
+    /* 👇 하단 채팅 입력창 구역: OS 테마 충돌 완벽 방어 (흰 글씨 강제) */
+    [data-testid="stBottom"] > div { background-color: #0E1117 !important; }
+    [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; }
+    [data-testid="stChatInput"] textarea { color: #FFFFFF !important; caret-color: #FFFFFF !important; }
+    [data-testid="stChatInput"] textarea::placeholder { color: #AAAAAA !important; }
+    [data-testid="stChatInput"] svg { fill: #FFFFFF !important; } 
+    
+    /* 팝업(메뉴) 내부 테마 및 테두리 */
+    div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
+    div[data-testid="stPopoverBody"] { background-color: #262730 !important; color: #FAFAFA !important; }
+    
+    /* 텍스트 색상들 */
     h1, h2, h3, h4, h5, h6, p, span, label, li { color: #FAFAFA !important; }
-    div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; }
+    
+    /* 카드 및 버튼 */
     .profile-card { background-color: #262730 !important; border-color: #444444 !important; }
     .stButton>button, .stPopover>div>button { background-color: #262730 !important; color: #FAFAFA !important; border: 1px solid #444444 !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -258,15 +288,17 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v2.4.7 ] 2026.03.31 (화)**
-            * **[20:00] 📱 모바일 UI 전면 개편 & 다크모드:** 채팅창의 복잡한 상단 버튼들을 입력창 바로 위의 '메뉴' 팝업 하나로 깔끔하게 압축했습니다. 버튼 하나로 다크/라이트 테마를 변경할 수 있습니다!
-
-            **[ v2.4.6 ] 2026.03.31 (화)**
-            * **[19:55] 🍫 아이템 상호작용 강화:** AI가 아이템을 소모할 때 대사와 행동 묘사에서 먹는 티를 직접 내도록 강화했습니다.
+            **[ v2.5.0 ] 2026.03.31 (화)**
+            * **[21:00] 🧠 누적형 장기 기억(Append Log) 도입:** 기존에 기억이 덮어씌워지며 디테일이 사라지던 문제를 해결하고, 일기장처럼 사건이 차곡차곡 쌓이도록 메모리 엔진을 전면 개편했습니다.
+            * **[21:00] 📱 카멜레온 텍스트 버그 픽스:** OS 설정과 테마가 충돌할 때 텍스트가 안 보이던 현상을 완벽하게 해결했습니다.
 
             ---
-            **[ v2.4.5 ] 2026.03.31 (화)**
-            * **[19:30] 🛡️ 서버 안정화 패치:** 제미나이 AI 서버 통신 불안정 에러(Try-Except) 로직 전면 도입.
+            **[ v2.4.8 ] 2026.03.31 (화)**
+            * **[20:10] 🗑️ 안전장치 추가:** 기억 삭제 버튼에 실수 방지용 '체크박스'를 도입하여 데이터 증발을 예방했습니다.
+            
+            ---
+            **[ v2.4.7 ] 2026.03.31 (화)**
+            * **[20:00] 📱 모바일 UI 전면 개편 & 다크모드:** 채팅창의 복잡한 상단 버튼들을 입력창 바로 위의 '메뉴' 팝업 하나로 깔끔하게 압축했습니다. 버튼 하나로 다크/라이트 테마를 변경할 수 있습니다!
             """)
 
 # =====================================================================
@@ -373,9 +405,9 @@ elif st.session_state.page == "chat_winter":
                     st.markdown(text)
 
     # =====================================================================
-    # 👇 [모바일 UI 최적화] 입력창 바로 위에 딱 붙은 서랍장 메뉴!
+    # 👇 [모바일 UI 최적화] 체크박스 도입 및 라이트모드 하단 깨짐 방어 완벽 해결
     # =====================================================================
-    st.write("") # 채팅과 메뉴 사이 살짝 여백
+    st.write("") # 채팅과 메뉴 사이 여백
     
     with st.container():
         with st.popover("⚙️ 메뉴 열기", use_container_width=True):
@@ -402,7 +434,7 @@ elif st.session_state.page == "chat_winter":
             
             st.divider()
             
-            # 3. 가방 & 일기장 (반반 나누기)
+            # 3. 가방 & 일기장
             col_inv, col_mem = st.columns(2)
             with col_inv:
                 st.subheader("🎒 보관함")
@@ -417,15 +449,17 @@ elif st.session_state.page == "chat_winter":
             
             st.divider()
             
-            # 4. 기억 포맷 (리셋)
-            st.warning("⚠️ 모든 기억 삭제")
-            if st.button("✅ 영구 삭제 실행", use_container_width=True):
-                supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                st.session_state.pop("chat_history", None)
-                st.session_state.pop("inventory", None)
-                st.session_state.pop("core_memory", None)
-                st.session_state.pop("affection", None)
-                st.rerun()
+            # 4. 기억 포맷 (체크박스 안전장치 추가)
+            st.subheader("🗑️ 기억 리셋")
+            delete_confirm = st.checkbox("🚨 진짜 기억을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+            if delete_confirm:
+                if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                    st.session_state.pop("chat_history", None)
+                    st.session_state.pop("inventory", None)
+                    st.session_state.pop("core_memory", None)
+                    st.session_state.pop("affection", None)
+                    st.rerun()
 
     # 채팅 입력창
     if user_input := st.chat_input("겨울이에게 메시지 보내기"):
@@ -525,6 +559,7 @@ elif st.session_state.page == "chat_winter":
         
         st.session_state.turn_count += 1
         
+        # 🧠 [장기 기억 보존력 200% 상승 패치] 누적형 일기장 적용
         if st.session_state.turn_count >= 10: 
             with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
                 try:
@@ -539,13 +574,28 @@ elif st.session_state.page == "chat_winter":
                             except:
                                 history_text += f"겨울: {t}\n"
                     
-                    summary_prompt = f"다음은 유저 '{user_name}'와 한겨울의 최근 대화 기록이야. 기존 핵심 기억은 '{st.session_state.core_memory}'였어. 기존 기억과 방금 나눈 대화에서 있었던 중요 사건, 감정 변화, 획득한 아이템 등을 종합해서 새로운 3줄 요약으로 업데이트해줘.\n\n{history_text}"
+                    summary_prompt = f"""
+                    다음은 유저 '{user_name}'와 한겨울의 최근 대화 기록이야. 
+
+                    [기존 일기장 내용]:
+                    {st.session_state.core_memory}
+
+                    [지시사항]:
+                    1. '기존 일기장 내용'은 절대 지우거나 훼손하지 말고 100% 그대로 유지해!
+                    2. 아래의 '최근 대화 기록'을 읽고, 새롭게 알게 된 중요한 팩트(유저의 취향, 충격적인 사건, 감정의 큰 변화 등)가 있다면 1~2줄로 짧게 요약해.
+                    3. 그 요약본을 기존 일기장 내용 맨 아래에 글머리기호(-)를 달아서 '누적 추가' 해줘. 
+                    4. 만약 뻔한 일상 대화라서 특별히 기록할 만한 새 사건이 없다면, 억지로 추가하지 말고 기존 일기장 내용만 그대로 출력해.
+
+                    [최근 대화 기록]:
+                    {history_text}
+                    """
                     
                     summary_response = client.models.generate_content(
                         model="gemini-2.5-flash",
                         contents=summary_prompt,
                     )
                     
+                    # 수파베이스 오타(username) 완벽 수정 완료
                     supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
                     st.session_state.core_memory = summary_response.text
