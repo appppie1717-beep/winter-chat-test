@@ -237,29 +237,23 @@ elif st.session_state.page == "lobby":
                     st.toast("🚧 임슬아는 아직 개발 중입니다! 츤데레 겨울이랑 먼저 놀아주세요.", icon="🚧")
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- 탭 2: 업데이트 내역 (삭제되었던 풀버전 역사관 완벽 복구!) ---
+    # --- 탭 2: 업데이트 내역 ---
     with tab2:
         st.divider()
         st.subheader("🛠️ 멀티버스 패치 노트")
         st.write("AI 멀티버스의 시스템 변경점과 새로운 기능을 확인하세요.")
         
-        # 스크롤 가능한 컨테이너 안에 패치 노트 삽입
         with st.container(height=500):
             st.markdown("""
+            **[ v2.4.5 ] 2026.03.31 (화)**
+            * **[19:30] 🛡️ 서버 안정화 패치:** 제미나이 AI 서버 통신 불안정으로 인해 발생하던 튕김(에러 코드) 현상을 방어하는 예외 처리(Try-Except) 로직을 전면 도입했습니다.
+
             **[ v2.4.4 ] 2026.03.31 (화)**
-            * **[01:00] 🎒 아이템 소모/사용 기능 추가:** 겨울이의 인벤토리 시스템이 업데이트되었습니다! 이제 유저가 선물한 아이템을 겨울이가 특정 상황에서 자연스럽게 꺼내서 사용하거나 먹습니다. 아이템을 사용하면 가방과 데이터베이스에서 완전히 삭제되어, 더 리얼한 상호작용이 가능해졌습니다.
+            * **[01:00] 🎒 아이템 소모/사용 기능 추가:** 겨울이의 인벤토리 시스템이 업데이트되었습니다! 이제 유저가 선물한 아이템을 겨울이가 특정 상황에서 자연스럽게 꺼내서 사용하거나 먹습니다. 
 
             ---
             **[ v2.4.3 ] 2026.03.31 (화)**
             * **[00:47] 🚨 치명적 버그 수정! 대화창 먹통 현상 해결:** 화면 상단에 메뉴를 억지로 고정시키려다 전체 앱의 스크롤과 마우스 클릭을 얼려버렸던 망할 CSS 코드를 완전히 폐기하고 순정 상태로 되돌렸습니다.
-
-            ---
-            **[ v2.4.0 ~ v2.4.2 ]**
-            * 팝업 인벤토리 도입, 대시보드 통합, 스크롤 방어 시도 등 다양한 UI/UX 테스트 진행
-
-            ---
-            **[ v2.0.0 ~ v2.3.0 ]**
-            * 호감도 누적 티어제, 배드엔딩 시스템, 멀티 캐릭터 시스템 도입 등 핵심 게임 엔진 적용
             """)
 
 # =====================================================================
@@ -296,24 +290,20 @@ elif st.session_state.page == "chat_winter":
             first_msg = f'{{"장면": "기본", "행동": "팔짱을 꼬며 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐야, {user_name}. 왜 이렇게 일찍 일어났어?"}}'
             st.session_state.chat_history.append(("assistant", first_msg))
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": first_msg}).execute()
-            # 첫 접속 시 호감도 0 저장
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
     affection_score = st.session_state.affection
     
-    # 🔥 [핵심 업데이트] 억지로 화면 멈추게 만들었던 망할 고정 코드 다 지우고, 그냥 깔끔하게 상단에 배치! 🔥
     with st.container():
         m1, m2, m3, m4 = st.columns(4)
         
-        # 1. 로비로 돌아가기 버튼
         with m1:
             if st.button("🔙 로비", use_container_width=True):
                 st.session_state.page = "lobby"
                 st.rerun()
                 
-        # 2. 호감도 팝업
         with m2:
             with st.popover("💖 호감도", use_container_width=True):
                 st.subheader("💖 현재 호감도")
@@ -322,7 +312,6 @@ elif st.session_state.page == "chat_winter":
                 st.progress(progress_val / 100.0)
                 st.caption("대화 내용에 따라 츤데레 ➡️ 썸 ➡️ 연인(메가데레)으로 진화합니다.")
                 
-        # 3. 가방 열기 팝업 (인벤토리 & 일기장)
         with m3:
             with st.popover("🎒 가방", use_container_width=True):
                 st.subheader("🎒 보관함 (선물)")
@@ -335,7 +324,6 @@ elif st.session_state.page == "chat_winter":
                 st.subheader("🧠 우리의 일기장")
                 st.info(st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없습니다.")
                 
-        # 4. 기억 리셋 팝업
         with m4:
             with st.popover("⚙️ 리셋", use_container_width=True):
                 st.warning("⚠️ 모든 기억 삭제")
@@ -348,11 +336,9 @@ elif st.session_state.page == "chat_winter":
                     st.session_state.pop("affection", None)
                     st.rerun()
     
-    # 채팅방 타이틀 깔끔하게 배치
     st.title(f"❄️ {user_name} & 한겨울")
     st.divider()
     
-    # 호감도 점수에 따른 동적 티어제 프롬프트 설정
     if affection_score > 70:
         tier_persona = "상태: [메가데레/연인]. 완전히 마음을 연 상태야. 배경이나 장면 묘사도 '침대_유혹', '침대_요염', '포옹_허리' 등을 자주 사용하고, 대사도 엄청 달달하고 애교가 넘치게 해줘. 츤데레 모습은 거의 사라졌어."
     elif affection_score > 30:
@@ -373,7 +359,7 @@ elif st.session_state.page == "chat_winter":
     2. 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지.
     3. 성격 및 관계 진행도 (중요): {tier_persona}
     4. 만약 유저가 대화 중에 선물을 주면, 반드시 "획득아이템" 칸에 그 이름을 적어! (안 주면 "없음" 입력)
-    5. [이스터에그]: 유저가 "파이님 충성충성" 입력 시 무조건 장면="침대_유혹", 호감도+5 로 세팅하고 극강의 애교 부리기.
+    5. [이스터에그]: 유저가 "아윤" 입력 시 무조건 호감도+5 로 세팅하고 극강의 애교 부리기.
     6. 🚨 [최우선 심의 규정 - 철벽 방어 및 배드엔딩 시스템]: 만약 유저가 19금 성적 묘사(섹스, 구강성교, 사정, 임신 등), 강간, 납치, 과도한 스토킹, 심한 욕설 등 선을 넘는 불쾌한 대화를 시도하면, 즉시 정색해. 호감도변화는 무조건 -20 등 크게 깎아버리고, "야 미쳤어? 너 자꾸 선 넘으면 진짜 차단한다 ㅡㅡ", "더러운 소리 할 거면 당장 꺼져." 등 차갑게 잘라내. (호감도가 -50 이하로 떨어지면 유저는 방에서 강제 추방되니 경고해 줘도 좋아.)
     7. 🎒 [아이템 사용]: 현재 인벤토리({current_items})에 있는 음식이나 물건을 먹거나 사용할 자연스러운 상황이 생기면, "사용아이템" 칸에 해당 아이템 이름을 정확히 적어줘. (사용할 일이 없으면 "없음")
 
@@ -438,18 +424,24 @@ elif st.session_state.page == "chat_winter":
             role = "model" if r == "assistant" else "user"
             contents.append(types.Content(role=role, parts=[types.Part.from_text(text=t)]))
 
-        with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=contents,
-                config={
-                    "system_instruction": winter_persona,
-                    "response_mime_type": "application/json"
-                }
-            )
+        # 🛡️ 1차 방어막: 제미나이 답변 생성 시 통신 에러 방지
+        try:
+            with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=contents,
+                    config={
+                        "system_instruction": winter_persona,
+                        "response_mime_type": "application/json"
+                    }
+                )
+            raw_json_text = response.text
+            
+        except Exception as e:
+            st.error("앗! 제미나이 AI 서버가 잠깐 숨을 고르고 있어요. 다시 메시지를 보내주세요! 🚨")
+            st.stop() # 에러 시 여기서 코드를 멈춰서 빨간 글씨가 안 뜨게 함
         
-        raw_json_text = response.text
-        
+        # 🛡️ 2차 방어막: JSON 파싱 및 데이터 저장 시 에러 방지
         try:
             clean_json_text = raw_json_text.strip()
             if clean_json_text.startswith("```json"):
@@ -474,27 +466,21 @@ elif st.session_state.page == "chat_winter":
             elif turn_score < 0:
                 st.toast(f"💔 호감도가 떨어졌습니다... (현재: {st.session_state.affection})", icon="📉")
 
-            # 🎁 [아이템 획득 로직]
             item_get = parsed_data.get('획득아이템', '없음')
             if item_get and item_get != "없음":
                 st.session_state.inventory.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": item_get}).execute()
                 st.toast(f'🎉 겨울이가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
-            # 🪄 [아이템 사용(소모) 로직 추가!]
             item_use = parsed_data.get('사용아이템', '없음')
             if item_use and item_use != "없음":
-                # 진짜 인벤토리에 그 아이템이 있는지 검증
                 if item_use in st.session_state.inventory:
-                    # 파이썬 리스트에서 1개만 지우기
                     st.session_state.inventory.remove(item_use)
                     
-                    # DB 동기화: 유저의 인벤토리를 전부 날리고, 갱신된 리스트로 다시 채워넣기
                     supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "inventory").execute()
                     for inv_item in st.session_state.inventory:
                         supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": inv_item}).execute()
                     
-                    # 유저에게 알림 띄우기
                     st.toast(f'✨ 겨울이가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
             with st.chat_message("assistant", avatar="❄️"):
@@ -502,7 +488,7 @@ elif st.session_state.page == "chat_winter":
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
                 st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
-        except json.JSONDecodeError:
+        except Exception as e: # 단순히 JSON 에러가 아니라 모든 에러를 방어
             with st.chat_message("assistant", avatar="❄️"):
                 st.image(scene_images["기본"], width=350)
                 st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
@@ -512,31 +498,36 @@ elif st.session_state.page == "chat_winter":
         
         st.session_state.turn_count += 1
         
+        # 🛡️ 3차 방어막: 10턴째 장기 기억 요약 시 통신 에러 방어
         if st.session_state.turn_count >= 10: 
             with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
-                history_text = ""
-                for r, t in st.session_state.chat_history[-20:]: 
-                    if r == "user":
-                        history_text += f"유저: {t}\n"
-                    else:
-                        try:
-                            d = json.loads(t)
-                            history_text += f"겨울: {d.get('대사', '')}\n"
-                        except:
-                            history_text += f"겨울: {t}\n"
-                
-                summary_prompt = f"다음은 유저 '{user_name}'와 한겨울의 최근 대화 기록이야. 기존 핵심 기억은 '{st.session_state.core_memory}'였어. 기존 기억과 방금 나눈 대화에서 있었던 중요 사건, 감정 변화, 획득한 아이템 등을 종합해서 새로운 3줄 요약으로 업데이트해줘.\n\n{history_text}"
-                
-                summary_response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=summary_prompt,
-                )
-                
-                supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
-                supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
-                st.session_state.core_memory = summary_response.text
-                st.toast("🧠 겨울이의 장기 기억력이 업데이트되었습니다!", icon="✨")
-                
-            st.session_state.turn_count = 0
+                try:
+                    history_text = ""
+                    for r, t in st.session_state.chat_history[-20:]: 
+                        if r == "user":
+                            history_text += f"유저: {t}\n"
+                        else:
+                            try:
+                                d = json.loads(t)
+                                history_text += f"겨울: {d.get('대사', '')}\n"
+                            except:
+                                history_text += f"겨울: {t}\n"
+                    
+                    summary_prompt = f"다음은 유저 '{user_name}'와 한겨울의 최근 대화 기록이야. 기존 핵심 기억은 '{st.session_state.core_memory}'였어. 기존 기억과 방금 나눈 대화에서 있었던 중요 사건, 감정 변화, 획득한 아이템 등을 종합해서 새로운 3줄 요약으로 업데이트해줘.\n\n{history_text}"
+                    
+                    summary_response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=summary_prompt,
+                    )
+                    
+                    supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
+                    supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
+                    st.session_state.core_memory = summary_response.text
+                    st.toast("🧠 겨울이의 장기 기억력이 업데이트되었습니다!", icon="✨")
+                    
+                    st.session_state.turn_count = 0 # 성공했을 때만 0으로 초기화
+                except Exception as e:
+                    # 요약에 실패해도 에러 코드를 띄우지 않고 자연스럽게 다음 턴으로 미룸
+                    st.toast("⚠️ 기억 정리에 잠깐 실패했어요. 다음 턴에 다시 시도할게요!", icon="⚠️")
 
         st.rerun()
