@@ -12,7 +12,7 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # =====================================================================
-# 🎨 [디자인 정밀 광택 2.5.0] 텍스트 카멜레온 픽스 & 누적 일기장 도입
+# 🎨 [디자인 정밀 광택 2.5.1] 채팅창 보호색 버그 완벽 사살 & 통합 UI
 # =====================================================================
 
 # 테마에 따른 CSS 동적 생성
@@ -23,21 +23,23 @@ if st.session_state.theme == "light":
     [data-testid="stAppViewContainer"] { background-color: #F4F4F9 !important; }
     [data-testid="stHeader"] { background-color: #F4F4F9 !important; }
     
-    /* 👇 하단 채팅 입력창 구역: OS 테마 충돌 완벽 방어 (검은 글씨 강제) */
+    /* 👇 [최종 픽스] 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (라이트 모드) */
     [data-testid="stBottom"] > div { background-color: #F4F4F9 !important; }
-    [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; }
-    [data-testid="stChatInput"] textarea { color: #000000 !important; caret-color: #000000 !important; }
-    [data-testid="stChatInput"] textarea::placeholder { color: #888888 !important; }
+    [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; border-radius: 10px !important; }
+    [data-testid="stChatInput"] div { background-color: transparent !important; } 
+    [data-testid="stChatInput"] textarea { 
+        background-color: transparent !important; 
+        color: #000000 !important; 
+        -webkit-text-fill-color: #000000 !important; 
+        caret-color: #000000 !important; 
+    }
+    [data-testid="stChatInput"] textarea::placeholder { color: #888888 !important; -webkit-text-fill-color: #888888 !important; }
     [data-testid="stChatInput"] svg { fill: #000000 !important; } 
     
     /* 팝업(메뉴) 내부 테마 및 테두리 완벽 수정 */
     div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
     div[data-testid="stPopoverBody"] { background-color: #FFFFFF !important; color: #1E1E1E !important; }
-    
-    /* 텍스트 색상들 */
     h1, h2, h3, h4, h5, h6, p, span, label, li { color: #1E1E1E !important; }
-    
-    /* 카드 및 버튼 */
     .profile-card { background-color: #FFFFFF !important; border-color: #DDDDDD !important; }
     .stButton>button, .stPopover>div>button { background-color: #FFFFFF !important; color: #1E1E1E !important; border: 1px solid #DDDDDD !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -50,21 +52,23 @@ else:
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     
-    /* 👇 하단 채팅 입력창 구역: OS 테마 충돌 완벽 방어 (흰 글씨 강제) */
+    /* 👇 [최종 픽스] 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (다크 모드) */
     [data-testid="stBottom"] > div { background-color: #0E1117 !important; }
-    [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; }
-    [data-testid="stChatInput"] textarea { color: #FFFFFF !important; caret-color: #FFFFFF !important; }
-    [data-testid="stChatInput"] textarea::placeholder { color: #AAAAAA !important; }
+    [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; border-radius: 10px !important; }
+    [data-testid="stChatInput"] div { background-color: transparent !important; } 
+    [data-testid="stChatInput"] textarea { 
+        background-color: transparent !important; 
+        color: #FFFFFF !important; 
+        -webkit-text-fill-color: #FFFFFF !important; 
+        caret-color: #FFFFFF !important; 
+    }
+    [data-testid="stChatInput"] textarea::placeholder { color: #AAAAAA !important; -webkit-text-fill-color: #AAAAAA !important; }
     [data-testid="stChatInput"] svg { fill: #FFFFFF !important; } 
     
     /* 팝업(메뉴) 내부 테마 및 테두리 */
     div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
     div[data-testid="stPopoverBody"] { background-color: #262730 !important; color: #FAFAFA !important; }
-    
-    /* 텍스트 색상들 */
     h1, h2, h3, h4, h5, h6, p, span, label, li { color: #FAFAFA !important; }
-    
-    /* 카드 및 버튼 */
     .profile-card { background-color: #262730 !important; border-color: #444444 !important; }
     .stButton>button, .stPopover>div>button { background-color: #262730 !important; color: #FAFAFA !important; border: 1px solid #444444 !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -137,10 +141,6 @@ st.markdown(theme_css + """
         border-radius: 20px !important;
         transition: all 0.2s !important;
         font-weight: bold !important;
-    }
-    
-    .stTextInput>div>div>input, .stForm {
-        border-radius: 10px !important;
     }
     
     /* 🚨 탭 UI 예쁘게 커스텀 */
@@ -288,9 +288,9 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v2.5.0 ] 2026.03.31 (화)**
+            **[ v2.5.1 ] 2026.03.31 (화)**
+            * **[21:05] 📱 카멜레온 텍스트 버그 픽스 완결판:** OS 설정과 테마가 충돌할 때 채팅창 글씨가 배경색에 묻혀버리던 현상을 완벽하게 근절했습니다.
             * **[21:00] 🧠 누적형 장기 기억(Append Log) 도입:** 기존에 기억이 덮어씌워지며 디테일이 사라지던 문제를 해결하고, 일기장처럼 사건이 차곡차곡 쌓이도록 메모리 엔진을 전면 개편했습니다.
-            * **[21:00] 📱 카멜레온 텍스트 버그 픽스:** OS 설정과 테마가 충돌할 때 텍스트가 안 보이던 현상을 완벽하게 해결했습니다.
 
             ---
             **[ v2.4.8 ] 2026.03.31 (화)**
@@ -405,7 +405,7 @@ elif st.session_state.page == "chat_winter":
                     st.markdown(text)
 
     # =====================================================================
-    # 👇 [모바일 UI 최적화] 체크박스 도입 및 라이트모드 하단 깨짐 방어 완벽 해결
+    # 👇 [모바일 UI 최적화] 입력창 바로 위에 딱 붙은 서랍장 메뉴!
     # =====================================================================
     st.write("") # 채팅과 메뉴 사이 여백
     
@@ -559,7 +559,7 @@ elif st.session_state.page == "chat_winter":
         
         st.session_state.turn_count += 1
         
-        # 🧠 [장기 기억 보존력 200% 상승 패치] 누적형 일기장 적용
+        # 🧠 [장기 기억 보존력 200% 상승 패치] 누적형 일기장 프롬프트 적용 완료!
         if st.session_state.turn_count >= 10: 
             with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
                 try:
@@ -595,7 +595,7 @@ elif st.session_state.page == "chat_winter":
                         contents=summary_prompt,
                     )
                     
-                    # 수파베이스 오타(username) 완벽 수정 완료
+                    # 💡 수파베이스 오타(username -> user_name) 완벽 수정 완료!
                     supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
                     st.session_state.core_memory = summary_response.text
