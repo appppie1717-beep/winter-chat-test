@@ -173,7 +173,7 @@ elif st.session_state.page == "lobby":
             st.markdown(f'''
                 <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
                     <div class="kakao-name">{user_name}</div>
-                    <div class="kakao-status">AI 멀티버스 창조중 🌐 | 2031 FIRE🔥</div>
+                    <div class="kakao-status">AI 멀티버스 창조중</div>
                 </div>
             ''', unsafe_allow_html=True)
         with col3:
