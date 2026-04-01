@@ -21,19 +21,17 @@ if st.session_state.theme == "light":
     [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
     [data-testid="stChatInput"] textarea { 
-        background-color: transparent !important; 
-        color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; 
-        caret-color: #000000 !important; 
+        background-color: transparent !important; color: #000000 !important; -webkit-text-fill-color: #000000 !important; caret-color: #000000 !important; 
     }
     [data-testid="stChatInput"] textarea::placeholder { color: #888888 !important; -webkit-text-fill-color: #888888 !important; }
     [data-testid="stChatInput"] svg { fill: #000000 !important; } 
     div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
     div[data-testid="stPopoverBody"] { background-color: #FFFFFF !important; color: #1E1E1E !important; }
-    h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #1E1E1E !important; }
-    .profile-card { background-color: #FFFFFF !important; border-color: #DDDDDD !important; }
+    h1, h2, h3, h4, h5, h6, p, span, label, li, .kakao-name { color: #1E1E1E !important; }
     .stButton>button, .stPopover>div>button { background-color: #FFFFFF !important; color: #1E1E1E !important; border: 1px solid #DDDDDD !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
+    .kakao-status, .kakao-section-title { color: #888888 !important; }
+    .kakao-divider { border-bottom: 1px solid rgba(0,0,0,0.08) !important; }
     </style>
     """
 else:
@@ -45,19 +43,17 @@ else:
     [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
     [data-testid="stChatInput"] textarea { 
-        background-color: transparent !important; 
-        color: #FFFFFF !important; 
-        -webkit-text-fill-color: #FFFFFF !important; 
-        caret-color: #FFFFFF !important; 
+        background-color: transparent !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; caret-color: #FFFFFF !important; 
     }
     [data-testid="stChatInput"] textarea::placeholder { color: #AAAAAA !important; -webkit-text-fill-color: #AAAAAA !important; }
     [data-testid="stChatInput"] svg { fill: #FFFFFF !important; } 
     div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
     div[data-testid="stPopoverBody"] { background-color: #262730 !important; color: #FAFAFA !important; }
-    h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #FAFAFA !important; }
-    .profile-card { background-color: #262730 !important; border-color: #444444 !important; }
+    h1, h2, h3, h4, h5, h6, p, span, label, li, .kakao-name { color: #FAFAFA !important; }
     .stButton>button, .stPopover>div>button { background-color: #262730 !important; color: #FAFAFA !important; border: 1px solid #444444 !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
+    .kakao-status, .kakao-section-title { color: #AAAAAA !important; }
+    .kakao-divider { border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
     </style>
     """
 
@@ -68,54 +64,30 @@ st.markdown(theme_css + """
     #MainMenu { display: none !important; visibility: hidden !important; }
     footer { display: none !important; visibility: hidden !important; }
 
-    .profile-card {
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 12px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border: 1px solid;
-    }
-    
-    .profile-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-
-    .blocked-card {
-        filter: grayscale(100%);
-        opacity: 0.6;
-    }
-
-    .profile-img {
-        width: 60px;
-        height: 60px;
-        background-color: #f7e600; 
-        color: black !important; 
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        margin-right: 15px;
-    }
-    
-    .profile-name { font-size: 18px; font-weight: bold; margin-bottom: 3px; }
-    .profile-desc { font-size: 13px; opacity: 0.7; line-height: 1.2; }
-    .stButton>button, .stPopover>div>button { border-radius: 20px !important; transition: all 0.2s !important; font-weight: bold !important; }
-    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-    .stTabs [data-baseweb="tab"] {
+    /* 📱 카카오톡 스타일 UI 클래스 */
+    .kakao-avatar {
+        width: 50px;
         height: 50px;
-        white-space: pre-wrap;
-        background-color: transparent;
-        border-radius: 4px 4px 0px 0px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        font-size: 16px;
-        font-weight: bold;
+        border-radius: 18px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 26px;
+        margin-right: 5px;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
     }
+    
+    .kakao-name { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .kakao-status { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .kakao-section-title { font-size: 12px; font-weight: normal; margin: 15px 0 10px 5px; }
+    .kakao-divider { margin: 8px 0; }
+
+    .blocked-avatar { filter: grayscale(100%); opacity: 0.5; }
+    .blocked-text { color: #FF4B4B !important; }
+
+    .stButton>button, .stPopover>div>button { border-radius: 20px !important; transition: all 0.2s !important; font-weight: bold !important; min-height: 36px !important; }
+    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
+    .stTabs [data-baseweb="tab"] { height: 50px; white-space: pre-wrap; background-color: transparent; border-radius: 4px 4px 0px 0px; padding-top: 10px; padding-bottom: 10px; font-size: 16px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -164,17 +136,17 @@ if st.session_state.page == "login":
         st.rerun()
 
 # =====================================================================
-# 📱 3. 카카오톡 로비 화면 (김민국 추가 버전)
+# 📱 3. 카카오톡 로비 화면 (UI 대격변 적용 완료)
 # =====================================================================
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
-    # 겨울이 호감도 조회
+    # 겨울이 호감도
     lobby_mem_winter = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     winter_affection = int(lobby_mem_winter.data[0]["message"]) if lobby_mem_winter.data else 0
     winter_blocked = winter_affection <= -50 
     
-    # 슬아 호감도 조회 
+    # 슬아 호감도
     db_user_name_seula = f"{user_name}_seula"
     lobby_mem_seula = supabase.table("chat_memory").select("message").eq("user_name", db_user_name_seula).eq("role", "affection").execute()
     seula_affection = int(lobby_mem_seula.data[0]["message"]) if lobby_mem_seula.data else 0
@@ -182,105 +154,117 @@ elif st.session_state.page == "lobby":
     
     col1, col2 = st.columns([8, 2])
     with col1:
-        st.title("AI 멀티버스 🌐")
+        st.title("친구")
     with col2:
         st.write("") 
-        if st.button("🔴 로그아웃", use_container_width=True):
+        if st.button("로그아웃", use_container_width=True):
             st.session_state.clear()
             st.rerun()
-
-    st.write(f"반갑습니다, **{user_name}**님!")
-    
+            
     tab1, tab2 = st.tabs(["👥 친구 목록", "📢 업데이트 내역"])
 
     with tab1:
-        st.divider()
-        st.write("오늘 대화할 AI 친구를 선택하세요.")
+        # 👤 1. 내 프로필 섹션
+        st.markdown('<div class="kakao-section-title">내 프로필</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1.5, 6.5, 2])
+        with col1:
+            st.markdown('<div class="kakao-avatar" style="background-color: #E8E8E8; color: #333;">😎</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'''
+                <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                    <div class="kakao-name">{user_name}</div>
+                    <div class="kakao-status">AI 멀티버스 창조중 🌐 | 2031 FIRE🔥</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col3:
+            st.write("") # 우측 여백
+            
+        st.markdown('<div class="kakao-divider" style="margin-top:15px; margin-bottom:5px; border-width:2px;"></div>', unsafe_allow_html=True)
+
+        # 👥 2. 친구 목록 섹션
+        st.markdown('<div class="kakao-section-title">친구 3</div>', unsafe_allow_html=True)
         
-        # ❄️ 한겨울 카드
-        with st.container():
-            card_class = "profile-card blocked-card" if winter_blocked else "profile-card"
-            st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 4, 2])
-            with col1:
-                st.markdown('<div class="profile-img">❄️</div>', unsafe_allow_html=True)
-            with col2:
-                if winter_blocked:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name" style="color:red;">한겨울 (차단됨)</div>
-                            <div class="profile-desc">선을 넘는 행동으로 영구 차단되었습니다.<br>우측 버튼을 눌러 과거를 청산하세요.</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name">한겨울</div>
-                            <div class="profile-desc">까칠한 츤데레 여사친. 은근히 챙겨주는 스타일. <br>호감도 {winter_affection}/100</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
-            with col3:
-                if not winter_blocked:
-                    if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
-                        st.session_state.page = "chat_winter"
-                        st.rerun()
-                else:
-                    if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
-                        supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                        st.toast("겨울이의 기록을 모두 지우고 새롭게 시작합니다!", icon="✨")
-                        st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # 🌸 임슬아 카드
-        with st.container():
-            card_class_seula = "profile-card blocked-card" if seula_blocked else "profile-card"
-            st.markdown(f'<div class="{card_class_seula}">', unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 4, 2])
-            with col1:
-                st.markdown('<div class="profile-img">🌸</div>', unsafe_allow_html=True)
-            with col2:
-                if seula_blocked:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name" style="color:red;">임슬아 (감금 엔딩)</div>
-                            <div class="profile-desc">슬아의 심기를 거슬러 영원히 갇혀버렸습니다.<br>우측 버튼을 눌러 탈출하세요.</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name">임슬아</div>
-                            <div class="profile-desc">존댓말 쓰는 연하녀. 하지만 속을 알 수 없는 얀데레 감시자.<br>호감도 {seula_affection}/100</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
-            with col3:
-                if not seula_blocked:
-                    if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
-                        st.session_state.page = "chat_seula"
-                        st.rerun()
-                else:
-                    if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
-                        supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).execute()
-                        st.toast("슬아의 기록에서 탈출하여 새롭게 시작합니다!", icon="✨")
-                        st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # 👦 김민국 카드 (신규 추가, 비활성화 상태)
-        with st.container():
-            st.markdown('<div class="profile-card">', unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 4, 2])
-            with col1:
-                st.markdown('<div class="profile-img">👦</div>', unsafe_allow_html=True)
-            with col2:
+        # ❄️ [친구 1] 한겨울
+        col1, col2, col3 = st.columns([1.5, 6, 2.5])
+        with col1:
+            avatar_class = "kakao-avatar blocked-avatar" if winter_blocked else "kakao-avatar"
+            st.markdown(f'<div class="{avatar_class}" style="background-color: #D6EAF8;">❄️</div>', unsafe_allow_html=True)
+        with col2:
+            if winter_blocked:
                 st.markdown(f'''
-                    <div>
-                        <div class="profile-name">김민국</div>
-                        <div class="profile-desc">[🚧 제작 중] 자기 성격을 그대로 갈아 넣고 있는 중입니다.<br>조만간 멀티버스에 합류할 예정!</div>
+                    <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                        <div class="kakao-name blocked-text">한겨울</div>
+                        <div class="kakao-status blocked-text">선을 넘는 행동으로 차단됨</div>
                     </div>
                 ''', unsafe_allow_html=True)
-            with col3:
-                st.button("개발 중 🚧", key="btn_minguk_disabled", disabled=True, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                        <div class="kakao-name">한겨울</div>
+                        <div class="kakao-status">호감도 {winter_affection}/100</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div style="height: 7px;"></div>', unsafe_allow_html=True)
+            if not winter_blocked:
+                if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
+                    st.session_state.page = "chat_winter"
+                    st.rerun()
+            else:
+                if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
+                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                    st.toast("겨울이의 기록을 모두 지우고 새롭게 시작합니다!", icon="✨")
+                    st.rerun()
+        st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
+
+        # 🌸 [친구 2] 임슬아
+        col1, col2, col3 = st.columns([1.5, 6, 2.5])
+        with col1:
+            avatar_class = "kakao-avatar blocked-avatar" if seula_blocked else "kakao-avatar"
+            st.markdown(f'<div class="{avatar_class}" style="background-color: #FADBD8;">🌸</div>', unsafe_allow_html=True)
+        with col2:
+            if seula_blocked:
+                st.markdown(f'''
+                    <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                        <div class="kakao-name blocked-text">임슬아</div>
+                        <div class="kakao-status blocked-text">감시망에 갇혀버림</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                        <div class="kakao-name">임슬아</div>
+                        <div class="kakao-status">호감도 {seula_affection}/100</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div style="height: 7px;"></div>', unsafe_allow_html=True)
+            if not seula_blocked:
+                if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
+                    st.session_state.page = "chat_seula"
+                    st.rerun()
+            else:
+                if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
+                    supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).execute()
+                    st.toast("슬아의 기록에서 탈출하여 새롭게 시작합니다!", icon="✨")
+                    st.rerun()
+        st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
+
+        # 👦 [친구 3] 김민국 (개발 중)
+        col1, col2, col3 = st.columns([1.5, 6, 2.5])
+        with col1:
+            st.markdown('<div class="kakao-avatar" style="background-color: #FCF3CF;">👦</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'''
+                <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
+                    <div class="kakao-name">김민국</div>
+                    <div class="kakao-status">자기 성격 갈아 넣는 중 🚧</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div style="height: 7px;"></div>', unsafe_allow_html=True)
+            st.button("개발 중 🚧", key="btn_minguk_disabled", disabled=True, use_container_width=True)
+        st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
 
     with tab2:
         st.divider()
@@ -289,17 +273,14 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v4.1.0 Alpha ] 2026.04.01 (수)**
+            * **[21:36] 🎨 카톡 UI 대격변 패치:** 로비 화면의 투박했던 박스 디자인을 제거하고, 국민 메신저와 99% 유사한 매끄러운 리스트형 디자인으로 프론트엔드를 대대적으로 개편했습니다. 
+            
             **[ v4.0.0 Alpha ] 2026.04.01 (수)**
             * **[21:25] 👦 신규 남자 캐릭터 '김민국' 로비 합류 예고:** 멀티버스 생태계 확장을 위해 최초의 남성 캐릭터 '김민국'의 프로필이 로비에 추가되었습니다. 현재 AI 페르소나 이식 작업 중입니다.
             
             **[ v3.2.2 ] 2026.04.01 (수)**
             * **[19:34] 🛠️ 용어 완벽 통일 및 세부 버그 픽스:** 메뉴명뿐만 아니라 AI 프롬프트 지시사항 내부의 모든 텍스트를 '기록(기록저장)'으로 완벽하게 통일했습니다.
-            
-            **[ v3.2.1 ] 2026.04.01 (수)**
-            * **[19:24] 🌸 임슬아 망상 버그 픽스:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다.
-            
-            **[ v3.2.0 ] 2026.04.01 (수)**
-            * **[18:33] 🚨 밴 유저 사면령 패치:** 영구 차단된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
             """)
 
 # =====================================================================
