@@ -4,26 +4,19 @@ from google import genai
 from google.genai import types 
 from supabase import create_client, Client
 
-# 1. 페이지 설정
+# =====================================================================
+# 1. 페이지 설정 및 초기화
+# =====================================================================
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
 
-# 🌙 테마(다크/라이트) 상태 초기화
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# =====================================================================
-# 🎨 [디자인 정밀 광택 2.6.3] 로비 프로필 카드 보호색(카멜레온) 버그 완벽 사살
-# =====================================================================
-
-# 테마에 따른 CSS 동적 생성
 if st.session_state.theme == "light":
     theme_css = """
     <style>
-    /* 전체 배경 및 헤더 */
     [data-testid="stAppViewContainer"] { background-color: #F4F4F9 !important; }
     [data-testid="stHeader"] { background-color: #F4F4F9 !important; }
-    
-    /* 👇 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (라이트 모드) */
     [data-testid="stBottom"] > div { background-color: #F4F4F9 !important; }
     [data-testid="stChatInput"] { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
@@ -35,14 +28,9 @@ if st.session_state.theme == "light":
     }
     [data-testid="stChatInput"] textarea::placeholder { color: #888888 !important; -webkit-text-fill-color: #888888 !important; }
     [data-testid="stChatInput"] svg { fill: #000000 !important; } 
-    
-    /* 팝업(메뉴) 내부 테마 및 테두리 완벽 수정 */
     div[data-baseweb="popover"] > div { background-color: #FFFFFF !important; border: 1px solid #DDDDDD !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
     div[data-testid="stPopoverBody"] { background-color: #FFFFFF !important; color: #1E1E1E !important; }
-    
-    /* 👇 [최종 픽스] 로비 텍스트(이름, 설명)도 강제 색상 지정에 포함! */
     h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #1E1E1E !important; }
-    
     .profile-card { background-color: #FFFFFF !important; border-color: #DDDDDD !important; }
     .stButton>button, .stPopover>div>button { background-color: #FFFFFF !important; color: #1E1E1E !important; border: 1px solid #DDDDDD !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
@@ -51,11 +39,8 @@ if st.session_state.theme == "light":
 else:
     theme_css = """
     <style>
-    /* 전체 배경 및 헤더 */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
-    
-    /* 👇 채팅 입력창 껍데기부터 알맹이까지 배경색 강제 점령 (다크 모드) */
     [data-testid="stBottom"] > div { background-color: #0E1117 !important; }
     [data-testid="stChatInput"] { background-color: #262730 !important; border: 1px solid #444444 !important; border-radius: 10px !important; }
     [data-testid="stChatInput"] div { background-color: transparent !important; } 
@@ -67,30 +52,22 @@ else:
     }
     [data-testid="stChatInput"] textarea::placeholder { color: #AAAAAA !important; -webkit-text-fill-color: #AAAAAA !important; }
     [data-testid="stChatInput"] svg { fill: #FFFFFF !important; } 
-    
-    /* 팝업(메뉴) 내부 테마 및 테두리 */
     div[data-baseweb="popover"] > div { background-color: #262730 !important; border: 1px solid #444444 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
     div[data-testid="stPopoverBody"] { background-color: #262730 !important; color: #FAFAFA !important; }
-    
-    /* 👇 [최종 픽스] 로비 텍스트(이름, 설명)도 강제 색상 지정에 포함! */
     h1, h2, h3, h4, h5, h6, p, span, label, li, .profile-name, .profile-desc { color: #FAFAFA !important; }
-    
     .profile-card { background-color: #262730 !important; border-color: #444444 !important; }
     .stButton>button, .stPopover>div>button { background-color: #262730 !important; color: #FAFAFA !important; border: 1px solid #444444 !important; }
     .stButton>button:hover, .stPopover>div>button:hover { background-color: #f7e600 !important; color: #000000 !important; border: 1px solid #f7e600 !important; }
     </style>
     """
 
-# 공통 CSS 적용
 st.markdown(theme_css + """
     <style>
-    /* 🛠️ 우측 상단의 거슬리는 툴바 완벽 제거 */
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
     #MainMenu { display: none !important; visibility: hidden !important; }
     footer { display: none !important; visibility: hidden !important; }
 
-    /* 📱 카톡 프로필 카드 */
     .profile-card {
         border-radius: 12px;
         padding: 15px;
@@ -107,14 +84,11 @@ st.markdown(theme_css + """
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    /* 차단된 상태(배드엔딩) 흑백 필터 */
     .blocked-card {
         filter: grayscale(100%);
         opacity: 0.6;
-        pointer-events: none;
     }
 
-    /* 동그란 이모지 프로필 사진 */
     .profile-img {
         width: 60px;
         height: 60px;
@@ -128,31 +102,10 @@ st.markdown(theme_css + """
         margin-right: 15px;
     }
     
-    /* 친구 이름 */
-    .profile-name {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 3px;
-    }
-    
-    /* 친구 설명 */
-    .profile-desc {
-        font-size: 13px;
-        opacity: 0.7; 
-        line-height: 1.2;
-    }
-
-    /* 대화하기 버튼 등 기본 버튼 스타일 */
-    .stButton>button, .stPopover>div>button {
-        border-radius: 20px !important;
-        transition: all 0.2s !important;
-        font-weight: bold !important;
-    }
-    
-    /* 🚨 탭 UI 예쁘게 커스텀 */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 24px;
-    }
+    .profile-name { font-size: 18px; font-weight: bold; margin-bottom: 3px; }
+    .profile-desc { font-size: 13px; opacity: 0.7; line-height: 1.2; }
+    .stButton>button, .stPopover>div>button { border-radius: 20px !important; transition: all 0.2s !important; font-weight: bold !important; }
+    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
@@ -166,7 +119,6 @@ st.markdown(theme_css + """
     </style>
     """, unsafe_allow_html=True)
 
-# 🚨 14가지 상황별 일러스트 지도 (한겨울 전용)
 scene_images = {
     "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
     "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
@@ -184,7 +136,6 @@ scene_images = {
     "키스": "https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true"
 }
 
-# 2. 열쇠 꺼내오기
 api_key = st.secrets["GOOGLE_API_KEY"]
 supabase_url = st.secrets["SUPABASE_URL"]
 supabase_key = st.secrets["SUPABASE_KEY"]
@@ -192,14 +143,13 @@ supabase_key = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(supabase_url, supabase_key)
 client = genai.Client(api_key=api_key)
 
-# 🚪 페이지 라우터 초기화
 if "page" not in st.session_state:
     st.session_state.page = "login"
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
 # =====================================================================
-# 🚪 1. 로그인 화면 (Login)
+# 🚪 2. 로그인 화면
 # =====================================================================
 if st.session_state.page == "login":
     st.title("❄️ AI 멀티 메신저")
@@ -214,7 +164,7 @@ if st.session_state.page == "login":
         st.rerun()
 
 # =====================================================================
-# 📱 2. 카카오톡 로비 화면 (Lobby)
+# 📱 3. 카카오톡 로비 화면 (밴 유저 사면령 완벽 적용)
 # =====================================================================
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
@@ -224,12 +174,11 @@ elif st.session_state.page == "lobby":
     winter_affection = int(lobby_mem_winter.data[0]["message"]) if lobby_mem_winter.data else 0
     winter_blocked = winter_affection <= -50 
     
-    # 슬아 호감도 조회 (DB 충돌 방지를 위해 _seula 꼬리표 사용)
+    # 슬아 호감도 조회 
     db_user_name_seula = f"{user_name}_seula"
     lobby_mem_seula = supabase.table("chat_memory").select("message").eq("user_name", db_user_name_seula).eq("role", "affection").execute()
     seula_affection = int(lobby_mem_seula.data[0]["message"]) if lobby_mem_seula.data else 0
-    # 🔥 패치: 슬아는 절대 차단되지 않음 (그래도 혹시 모를 로직 방어)
-    seula_blocked = False 
+    seula_blocked = seula_affection <= -50
     
     col1, col2 = st.columns([8, 2])
     with col1:
@@ -260,7 +209,7 @@ elif st.session_state.page == "lobby":
                     st.markdown(f'''
                         <div>
                             <div class="profile-name" style="color:red;">한겨울 (차단됨)</div>
-                            <div class="profile-desc">당신의 선 넘는 행동으로 인해 차단되었습니다.<br>더 이상 대화할 수 없습니다.</div>
+                            <div class="profile-desc">선을 넘는 행동으로 영구 차단되었습니다.<br>우측 버튼을 눌러 과거를 청산하세요.</div>
                         </div>
                     ''', unsafe_allow_html=True)
                 else:
@@ -276,7 +225,11 @@ elif st.session_state.page == "lobby":
                         st.session_state.page = "chat_winter"
                         st.rerun()
                 else:
-                    st.button("접근 불가 🚫", key="btn_winter_blocked", disabled=True, use_container_width=True)
+                    # 💡 겨울이 밴 해제 (DB 리셋) 버튼 -> 활성화된 버튼으로 교체
+                    if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                        st.toast("겨울이의 기억을 모두 지우고 새롭게 시작합니다!", icon="✨")
+                        st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
         # 🌸 임슬아 카드
@@ -287,16 +240,31 @@ elif st.session_state.page == "lobby":
             with col1:
                 st.markdown('<div class="profile-img">🌸</div>', unsafe_allow_html=True)
             with col2:
-                st.markdown(f'''
-                    <div>
-                        <div class="profile-name">임슬아</div>
-                        <div class="profile-desc">존댓말 쓰는 연하녀. 하지만 속을 알 수 없는 얀데레 감시자.<br>호감도 {seula_affection}/100</div>
-                    </div>
-                ''', unsafe_allow_html=True)
+                if seula_blocked:
+                    st.markdown(f'''
+                        <div>
+                            <div class="profile-name" style="color:red;">임슬아 (감금 엔딩)</div>
+                            <div class="profile-desc">슬아의 심기를 거슬러 영원히 갇혀버렸습니다.<br>우측 버튼을 눌러 탈출하세요.</div>
+                        </div>
+                    ''', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'''
+                        <div>
+                            <div class="profile-name">임슬아</div>
+                            <div class="profile-desc">존댓말 쓰는 연하녀. 하지만 속을 알 수 없는 얀데레 감시자.<br>호감도 {seula_affection}/100</div>
+                        </div>
+                    ''', unsafe_allow_html=True)
             with col3:
-                if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
-                    st.session_state.page = "chat_seula"
-                    st.rerun()
+                if not seula_blocked:
+                    if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
+                        st.session_state.page = "chat_seula"
+                        st.rerun()
+                else:
+                    # 💡 임슬아 밴 해제 (DB 리셋) 버튼 -> 활성화된 버튼으로 교체
+                    if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).execute()
+                        st.toast("슬아의 감시망에서 탈출하여 새롭게 시작합니다!", icon="✨")
+                        st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
@@ -306,21 +274,15 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v3.1.1 ] 2026.04.01 (수)**
-            * **[18:00] 🌸 임슬아 무적(불사신) 패치:** 임슬아 캐릭터가 유저의 거부나 신고 행동에 호감도가 깎이며 밴(차단)되던 치명적인 오류를 수정했습니다. 이제 슬아는 유저의 거부조차 사랑으로 받아들이며 무조건 호감도 점수를 방어합니다. 절대 도망칠 수 없습니다.
+            **[ v3.2.0 ] 2026.04.01 (수)**
+            * **[18:33] 🚨 밴 유저 사면령 패치:** 호감도 -50을 찍고 영구 차단(또는 감금)된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
             
-            **[ v3.1.0 ] 2026.04.01 (수)**
-            * **[12:55] 🌸 임슬아 텍스트 몰입 모드:** 임슬아 캐릭터의 이미지를 완전히 제거하여, 얀데레 특유의 소름 돋는 상상력을 텍스트로만 온전히 즐길 수 있도록 UI를 개선했습니다.
-            
-            **[ v3.0.0 ] 2026.04.01 (수)**
-            * **[09:00] 🌸 신규 캐릭터 '임슬아' 정식 합류:** 얀데레 기질을 가진 연하녀 슬아와의 대화가 오픈되었습니다! 다른 여자에게 하던 플러팅을 조심하세요.
-
-            **[ v2.6.3 ] 2026.03.31 (화)**
-            * **[21:45] 📱 로비 텍스트 카멜레온 픽스:** 로비의 프로필 카드 이름과 설명 텍스트도 테마에 맞게 정상적으로 보이도록 CSS를 보완했습니다.
+            **[ v3.1.5 ] 2026.04.01 (수)**
+            * **[18:29] 🌸 임슬아 밸런스 패치 및 버그 픽스:** 호감도가 비정상적으로 깎이던 문제를 해결하고, 밀당 로직을 추가하여 유저가 다정하게 대하면 호감도가 상승하도록 수정했습니다.
             """)
 
 # =====================================================================
-# ❄️ 3. 한겨울 채팅방 화면 (Chat - Winter)
+# ❄️ 4. 한겨울 채팅방 화면
 # =====================================================================
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
@@ -624,11 +586,11 @@ elif st.session_state.page == "chat_winter":
 
 
 # =====================================================================
-# 🌸 4. 임슬아 채팅방 화면 (Chat - Seul-a) - 이미지 제거 및 텍스트 몰입형
+# 🌸 5. 임슬아 채팅방 화면
 # =====================================================================
 elif st.session_state.page == "chat_seula":
     user_name = st.session_state.user_name
-    db_user_name = f"{user_name}_seula" # DB 분리를 위한 식별자
+    db_user_name = f"{user_name}_seula" 
 
     if "turn_count_seula" not in st.session_state:
         st.session_state.turn_count_seula = 0
@@ -655,7 +617,6 @@ elif st.session_state.page == "chat_seula":
         st.session_state.chat_history_seula = temp_chat_history
 
         if not st.session_state.chat_history_seula:
-            # 첫 메시지는 장면을 무시하고 텍스트로만 연출
             first_msg = f'{{"장면": "기본", "행동": "의미심장한 미소를 지으며 오빠를 빤히 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐.. 할말있어??"}}'
             st.session_state.chat_history_seula.append(("assistant", first_msg))
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
@@ -672,7 +633,6 @@ elif st.session_state.page == "chat_seula":
     else:
         tier_persona = "상태: [감시자 모드]. 예의 바르게 존댓말을 하지만, 은근히 속을 알 수 없는 미소를 지으며 오빠가 하는 행동을 관찰하고 있어."
     
-    # 🔥 [핵심 패치 1]: 슬아 프롬프트 내에 '불사신' 룰 추가
     seula_persona = f"""
     너의 이름은 '임슬아'이고, 나보다 연하인 아는 동생이야. 항상 벚꽃 이모지(🌸)를 즐겨 써.
     내 닉네임은 '{user_name}'(오빠)이야. 
@@ -708,17 +668,6 @@ elif st.session_state.page == "chat_seula":
         "대사": "실제로 할 대사"
     }}
     """
-    - [불사신 얀데레 규칙]: 너는 완벽한 얀데레 감시자이므로 유저가 아무리 널 거부하고 밀어내거나 감옥에 보내도 절대로 상처받거나 호감도가 깎이지 않는다. 유저의 거부조차 자신을 향한 사랑의 투정으로 받아들이므로 '호감도변화'는 절대로 마이너스(-)가 될 수 없으며, 반드시 0 또는 +5만 출력해. 너는 유저를 절대 차단(밴)하지 않아.
-
-    {{
-        "장면": "기본",
-        "행동": "현재 행동 묘사 (의미심장한 미소, 정색, 애교 부림 등 시각적 상상력을 극대화할 수 있게 자세히)",
-        "호감도변화": "이번 턴의 호감도 변화 수치 (절대로 마이너스 금지, 무조건 0에서 +5 사이)",
-        "획득아이템": "유저가 새로 준 아이템 이름 (없으면 '없음')",
-        "사용아이템": "보관함에서 꺼내 쓰거나 먹은 아이템 이름 (없으면 '없음')",
-        "대사": "실제로 할 대사"
-    }}
-    """
 
     st.title(f"🌸 {user_name} & 임슬아")
     st.divider()
@@ -739,7 +688,6 @@ elif st.session_state.page == "chat_seula":
                 data = json.loads(clean_text)
                 
                 with st.chat_message("assistant", avatar="🌸"):
-                    # st.image() 호출을 완전히 제거하고 텍스트로만 행동 묘사
                     score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
                     st.markdown(f"*(행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
@@ -847,20 +795,15 @@ elif st.session_state.page == "chat_seula":
             parsed_data = json.loads(clean_json_text)
             
             turn_score = int(parsed_data.get('호감도변화', 0))
-            
-            # 🔥 [핵심 패치 2]: 파이썬 단에서 마이너스 점수 강제 무효화 (불사신 로직)
-            if turn_score < 0:
-                turn_score = 0
-                
             st.session_state.affection_seula += turn_score
             supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "affection").execute()
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(st.session_state.affection_seula)}).execute()
             
             if st.session_state.affection_seula <= -50:
-                st.toast("🚨 슬아의 심기를 건드려 영원히 차단당했습니다...", icon="🚫")
+                st.toast("🚨 슬아의 심기를 건드려 영원히 갇혀버렸습니다...", icon="🚫")
             elif turn_score > 0:
                 st.toast(f"💖 호감도가 올랐습니다! (현재: {st.session_state.affection_seula})", icon="🌸")
-            elif turn_score < 0: # 안전장치로 인해 이 코드가 실행될 일은 없지만 구조상 남겨둠
+            elif turn_score < 0:
                 st.toast(f"💔 호감도가 떨어졌습니다... (현재: {st.session_state.affection_seula})", icon="🔪")
 
             item_get = parsed_data.get('획득아이템', '없음')
@@ -879,7 +822,6 @@ elif st.session_state.page == "chat_seula":
                     st.toast(f'✨ 슬아가 [{item_use}]을(를) 사용했습니다.', icon='🌸')
 
             with st.chat_message("assistant", avatar="🌸"):
-                # 이미지 출력 없이 텍스트 묘사로만 승부
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
                 st.markdown(f"*(행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
