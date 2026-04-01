@@ -166,7 +166,7 @@ st.markdown(theme_css + """
     </style>
     """, unsafe_allow_html=True)
 
-# 🚨 14가지 상황별 일러스트 지도 (겨울/슬아 공통 사용. 향후 슬아 전용 이미지로 교체 가능)
+# 🚨 14가지 상황별 일러스트 지도 (한겨울 전용)
 scene_images = {
     "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
     "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
@@ -316,15 +316,14 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v3.1.0 ] 2026.04.01 (수)**
+            * **[12:55] 🌸 임슬아 텍스트 몰입 모드:** 임슬아 캐릭터의 이미지를 완전히 제거하여, 얀데레 특유의 소름 돋는 상상력을 텍스트로만 온전히 즐길 수 있도록 UI를 개선했습니다.
+            
             **[ v3.0.0 ] 2026.04.01 (수)**
             * **[09:00] 🌸 신규 캐릭터 '임슬아' 정식 합류:** 얀데레 기질을 가진 연하녀 슬아와의 대화가 오픈되었습니다! 다른 여자에게 하던 플러팅을 조심하세요.
 
             **[ v2.6.3 ] 2026.03.31 (화)**
             * **[21:45] 📱 로비 텍스트 카멜레온 픽스:** 로비의 프로필 카드 이름과 설명 텍스트도 테마에 맞게 정상적으로 보이도록 CSS를 보완했습니다.
-            
-            **[ v2.6.2 ] 2026.03.31 (화)**
-            * **[21:30] ❄️ 겨울이 호감도 감점 로직 강화:** 유저가 얄밉게 굴거나 서운하게 할 때도 더 현실적으로 호감도가 깎이도록 페널티 시스템을 깐깐하게 재조정했습니다.
-            * **[21:35] 🛠️ UI 위치 최종 고정:** 메뉴 팝업이 스크롤 위로 올라가던 문제를 해결하고 채팅 입력창 바로 위에 완벽하게 고정시켰습니다.
             """)
 
 # =====================================================================
@@ -632,7 +631,7 @@ elif st.session_state.page == "chat_winter":
 
 
 # =====================================================================
-# 🌸 4. 임슬아 채팅방 화면 (Chat - Seul-a) - 신규 추가!
+# 🌸 4. 임슬아 채팅방 화면 (Chat - Seul-a) - 이미지 제거 및 텍스트 몰입형
 # =====================================================================
 elif st.session_state.page == "chat_seula":
     user_name = st.session_state.user_name
@@ -663,6 +662,7 @@ elif st.session_state.page == "chat_seula":
         st.session_state.chat_history_seula = temp_chat_history
 
         if not st.session_state.chat_history_seula:
+            # 첫 메시지는 장면을 무시하고 텍스트로만 연출
             first_msg = f'{{"장면": "기본", "행동": "의미심장한 미소를 지으며 오빠를 빤히 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐.. 할말있어??"}}'
             st.session_state.chat_history_seula.append(("assistant", first_msg))
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
@@ -703,8 +703,8 @@ elif st.session_state.page == "chat_seula":
     - 만약 유저가 선물을 주면 "획득아이템" 칸에 적고, 보관함 아이템({current_items})을 사용할 상황이면 "사용아이템" 칸에 적은 뒤, 반드시 '행동'과 '대사'에 묘사해.
 
     {{
-        "장면": "기본, 침대_유혹, 아련_문, 아련_벽, 힘듦, 당황_숨가쁨, 취기_웃음, 슬픔_훌쩍, 침대_누움, 침대_앉음, 침대_요염, 침대_내려다봄, 포옹_허리, 키스 중 1개 선택",
-        "행동": "현재 행동 묘사 (의미심장한 미소, 정색, 애교 부림 등)",
+        "장면": "기본",
+        "행동": "현재 행동 묘사 (의미심장한 미소, 정색, 애교 부림 등 시각적 상상력을 극대화할 수 있게 자세히)",
         "호감도변화": "이번 턴의 호감도 변화 수치 (-50 ~ +5 사이)",
         "획득아이템": "유저가 새로 준 아이템 이름 (없으면 '없음')",
         "사용아이템": "보관함에서 꺼내 쓰거나 먹은 아이템 이름 (없으면 '없음')",
@@ -729,14 +729,12 @@ elif st.session_state.page == "chat_seula":
                 clean_text = clean_text.strip()
                 
                 data = json.loads(clean_text)
-                scene = data.get('장면', '기본')
-                img_path = scene_images.get(scene, scene_images["기본"]) # 임슬아도 임시로 같은 장면 이미지 공유
                 
                 with st.chat_message("assistant", avatar="🌸"):
-                    st.image(img_path, width=350) 
+                    # st.image() 호출을 완전히 제거하고 텍스트로만 행동 묘사
                     score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
-                    st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
+                    st.markdown(f"*(행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
             except:
                 with st.chat_message("assistant", avatar="🌸"):
                     st.markdown(text)
@@ -839,8 +837,6 @@ elif st.session_state.page == "chat_seula":
             clean_json_text = clean_json_text.strip()
             
             parsed_data = json.loads(clean_json_text)
-            scene = parsed_data.get('장면', '기본')
-            img_path = scene_images.get(scene, scene_images["기본"])
             
             turn_score = int(parsed_data.get('호감도변화', 0))
             st.session_state.affection_seula += turn_score
@@ -870,14 +866,13 @@ elif st.session_state.page == "chat_seula":
                     st.toast(f'✨ 슬아가 [{item_use}]을(를) 사용했습니다.', icon='🌸')
 
             with st.chat_message("assistant", avatar="🌸"):
-                st.image(img_path, width=350)
+                # 이미지 출력 없이 텍스트 묘사로만 승부
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
-                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
+                st.markdown(f"*(행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
         
         except Exception as e:
             with st.chat_message("assistant", avatar="🌸"):
-                st.image(scene_images["기본"], width=350)
-                st.markdown(f"*(연출: 기본 / 행동: 빤히 쳐다본다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 오빠, 방금 한 말... 무슨 뜻이야? 제대로 다시 말해줄래? 」**")
+                st.markdown(f"*(행동: 빤히 쳐다본다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 오빠, 방금 한 말... 무슨 뜻이야? 제대로 다시 말해줄래? 」**")
                 
         st.session_state.chat_history_seula.append(("assistant", raw_json_text))
         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": raw_json_text}).execute()
