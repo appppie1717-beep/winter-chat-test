@@ -93,7 +93,7 @@ st.markdown(theme_css + """
 
 scene_images = {
     "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
-    "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
+    "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
     "아련_문": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%AC%B8%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
     "아련_벽": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%B2%BD%EC%9D%84%20%EB%93%B1%EC%A7%80%EA%B3%A0%20%EC%84%9C%EC%84%9C%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%A0%95%EB%A9%B4%EC%9D%84%20%EC%A3%BC%EC%8B%9C%ED%95%9C%EB%8B%A4(%EC%B8%A1%EB%A9%B4).png?raw=true",
     "힘듦": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%20%EB%B2%BD%EC%9D%84%20%ED%9E%98%EB%93%A0%EB%93%AF%EC%9D%B4%20%EA%B8%B0%EB%8C%84%EB%8B%A4.png?raw=true",
@@ -179,7 +179,7 @@ elif st.session_state.page == "lobby":
             st.markdown(f'''
                 <div style="display:flex; flex-direction:column; justify-content:center; height:50px;">
                     <div class="kakao-name">{user_name}</div>
-                    <div class="kakao-status">AI 멀티버스 창조중 🌐 | 2031 FIRE🔥</div>
+                    <div class="kakao-status">AI 멀티버스 창조중 🌐</div>
                 </div>
             ''', unsafe_allow_html=True)
         with col3:
@@ -417,51 +417,69 @@ elif st.session_state.page == "chat_winter":
 
     st.write("") 
     with st.container():
-        with st.popover("⚙️ 메뉴 열기", use_container_width=True):
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                if st.button("🔙 로비로 이동", use_container_width=True):
-                    st.session_state.page = "lobby"
-                    st.rerun()
-            with col_m2:
-                theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
-                if st.button(theme_label, use_container_width=True):
-                    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-                    st.rerun()
-            
-            st.divider()
-            
-            st.subheader("💖 현재 호감도")
-            progress_val = max(0, min(affection_score, 100)) 
-            st.write(f"**겨울이와의 점수: {affection_score} / 100**")
-            st.progress(progress_val / 100.0)
-            
-            st.divider()
-            
-            col_inv, col_mem = st.columns(2)
-            with col_inv:
-                st.subheader("🎒 보관함")
-                if st.session_state.inventory:
-                    for item in st.session_state.inventory:
-                        st.success(f"🎁 {item}")
-                else:
-                    st.info("비어있음")
-            with col_mem:
-                st.subheader("🧠 기록저장")
-                st.info(st.session_state.core_memory if st.session_state.core_memory else "기록 없음")
-            
-            st.divider()
-            
-            st.subheader("🗑️ 기록 리셋")
-            delete_confirm = st.checkbox("🚨 진짜 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
-            if delete_confirm:
-                if st.button("✅ 영구 삭제 실행", use_container_width=True):
-                    supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                    st.session_state.pop("chat_history", None)
-                    st.session_state.pop("inventory", None)
-                    st.session_state.pop("core_memory", None)
-                    st.session_state.pop("affection", None)
-                    st.rerun()
+        col_btn_add, col_btn_menu = st.columns(2)
+        
+        # 👥 대화상대 추가 UI (한겨울 방)
+        with col_btn_add:
+            with st.popover("👥 대화상대 추가", use_container_width=True):
+                st.markdown("<h4 style='text-align:center; margin-bottom: 5px;'>누구를 초대할까?</h4>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:center; color:#888; font-size:13px;'>※ 멀티 채팅 기능은 내일 오픈됩니다.</p>", unsafe_allow_html=True)
+                st.write("")
+                col_inv1, col_inv2 = st.columns(2)
+                with col_inv1:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>🌸</div>", unsafe_allow_html=True)
+                    st.button("임슬아", disabled=True, use_container_width=True, key="inv_s_w")
+                with col_inv2:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>👦</div>", unsafe_allow_html=True)
+                    st.button("김민국", disabled=True, use_container_width=True, key="inv_m_w")
+                    
+        # ⚙️ 메뉴 열기 UI
+        with col_btn_menu:
+            with st.popover("⚙️ 메뉴 열기", use_container_width=True):
+                col_m1, col_m2 = st.columns(2)
+                with col_m1:
+                    if st.button("🔙 로비로 이동", use_container_width=True):
+                        st.session_state.page = "lobby"
+                        st.rerun()
+                with col_m2:
+                    theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
+                    if st.button(theme_label, use_container_width=True):
+                        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+                        st.rerun()
+                
+                st.divider()
+                
+                st.subheader("💖 현재 호감도")
+                progress_val = max(0, min(affection_score, 100)) 
+                st.write(f"**겨울이와의 점수: {affection_score} / 100**")
+                st.progress(progress_val / 100.0)
+                
+                st.divider()
+                
+                col_inv, col_mem = st.columns(2)
+                with col_inv:
+                    st.subheader("🎒 보관함")
+                    if st.session_state.inventory:
+                        for item in st.session_state.inventory:
+                            st.success(f"🎁 {item}")
+                    else:
+                        st.info("비어있음")
+                with col_mem:
+                    st.subheader("🧠 기록저장")
+                    st.info(st.session_state.core_memory if st.session_state.core_memory else "기록 없음")
+                
+                st.divider()
+                
+                st.subheader("🗑️ 기록 리셋")
+                delete_confirm = st.checkbox("🚨 진짜 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+                if delete_confirm:
+                    if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                        st.session_state.pop("chat_history", None)
+                        st.session_state.pop("inventory", None)
+                        st.session_state.pop("core_memory", None)
+                        st.session_state.pop("affection", None)
+                        st.rerun()
 
     if user_input := st.chat_input("겨울이에게 메시지 보내기"):
         st.toast('겨울이가 당신의 메시지를 읽고 고민 중입니다...', icon='👀')
@@ -721,51 +739,69 @@ elif st.session_state.page == "chat_seula":
 
     st.write("") 
     with st.container():
-        with st.popover("⚙️ 메뉴 열기", use_container_width=True):
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                if st.button("🔙 로비로 이동", use_container_width=True):
-                    st.session_state.page = "lobby"
-                    st.rerun()
-            with col_m2:
-                theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
-                if st.button(theme_label, key="theme_seula", use_container_width=True):
-                    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-                    st.rerun()
-            
-            st.divider()
-            
-            st.subheader("💖 현재 호감도")
-            progress_val = max(0, min(affection_score, 100)) 
-            st.write(f"**슬아와의 점수: {affection_score} / 100**")
-            st.progress(progress_val / 100.0)
-            
-            st.divider()
-            
-            col_inv, col_mem = st.columns(2)
-            with col_inv:
-                st.subheader("🎒 보관함")
-                if st.session_state.inventory_seula:
-                    for item in st.session_state.inventory_seula:
-                        st.success(f"🎁 {item}")
-                else:
-                    st.info("비어있음")
-            with col_mem:
-                st.subheader("🧠 기록저장")
-                st.info(st.session_state.core_memory_seula if st.session_state.core_memory_seula else "기록 없음")
-            
-            st.divider()
-            
-            st.subheader("🗑️ 기록 리셋")
-            delete_confirm = st.checkbox("🚨 슬아의 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
-            if delete_confirm:
-                if st.button("✅ 영구 삭제 실행", use_container_width=True):
-                    supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
-                    st.session_state.pop("chat_history_seula", None)
-                    st.session_state.pop("inventory_seula", None)
-                    st.session_state.pop("core_memory_seula", None)
-                    st.session_state.pop("affection_seula", None)
-                    st.rerun()
+        col_btn_add, col_btn_menu = st.columns(2)
+        
+        # 👥 대화상대 추가 UI (임슬아 방)
+        with col_btn_add:
+            with st.popover("👥 대화상대 추가", use_container_width=True):
+                st.markdown("<h4 style='text-align:center; margin-bottom: 5px;'>누구를 초대할까?</h4>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:center; color:#888; font-size:13px;'>※ 멀티 채팅 기능은 내일 오픈됩니다.</p>", unsafe_allow_html=True)
+                st.write("")
+                col_inv1, col_inv2 = st.columns(2)
+                with col_inv1:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>❄️</div>", unsafe_allow_html=True)
+                    st.button("한겨울", disabled=True, use_container_width=True, key="inv_w_s")
+                with col_inv2:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>👦</div>", unsafe_allow_html=True)
+                    st.button("김민국", disabled=True, use_container_width=True, key="inv_m_s")
+                    
+        # ⚙️ 메뉴 열기 UI
+        with col_btn_menu:
+            with st.popover("⚙️ 메뉴 열기", use_container_width=True):
+                col_m1, col_m2 = st.columns(2)
+                with col_m1:
+                    if st.button("🔙 로비로 이동", use_container_width=True):
+                        st.session_state.page = "lobby"
+                        st.rerun()
+                with col_m2:
+                    theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
+                    if st.button(theme_label, key="theme_seula", use_container_width=True):
+                        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+                        st.rerun()
+                
+                st.divider()
+                
+                st.subheader("💖 현재 호감도")
+                progress_val = max(0, min(affection_score, 100)) 
+                st.write(f"**슬아와의 점수: {affection_score} / 100**")
+                st.progress(progress_val / 100.0)
+                
+                st.divider()
+                
+                col_inv, col_mem = st.columns(2)
+                with col_inv:
+                    st.subheader("🎒 보관함")
+                    if st.session_state.inventory_seula:
+                        for item in st.session_state.inventory_seula:
+                            st.success(f"🎁 {item}")
+                    else:
+                        st.info("비어있음")
+                with col_mem:
+                    st.subheader("🧠 기록저장")
+                    st.info(st.session_state.core_memory_seula if st.session_state.core_memory_seula else "기록 없음")
+                
+                st.divider()
+                
+                st.subheader("🗑️ 기록 리셋")
+                delete_confirm = st.checkbox("🚨 슬아의 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+                if delete_confirm:
+                    if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_seula", None)
+                        st.session_state.pop("inventory_seula", None)
+                        st.session_state.pop("core_memory_seula", None)
+                        st.session_state.pop("affection_seula", None)
+                        st.rerun()
 
     if user_input := st.chat_input("슬아에게 메시지 보내기"):
         st.toast('슬아가 당신을 지켜보며 답장을 고민 중입니다...', icon='🌸')
@@ -1022,51 +1058,69 @@ elif st.session_state.page == "chat_minguk":
 
     st.write("") 
     with st.container():
-        with st.popover("⚙️ 메뉴 열기", use_container_width=True):
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                if st.button("🔙 로비로 이동", use_container_width=True):
-                    st.session_state.page = "lobby"
-                    st.rerun()
-            with col_m2:
-                theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
-                if st.button(theme_label, key="theme_minguk", use_container_width=True):
-                    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-                    st.rerun()
-            
-            st.divider()
-            
-            st.subheader("💖 현재 호감도")
-            progress_val = max(0, min(affection_score, 100)) 
-            st.write(f"**민국이와의 점수: {affection_score} / 100**")
-            st.progress(progress_val / 100.0)
-            
-            st.divider()
-            
-            col_inv, col_mem = st.columns(2)
-            with col_inv:
-                st.subheader("🎒 보관함")
-                if st.session_state.inventory_minguk:
-                    for item in st.session_state.inventory_minguk:
-                        st.success(f"🎁 {item}")
-                else:
-                    st.info("비어있음")
-            with col_mem:
-                st.subheader("🧠 기록저장")
-                st.info(st.session_state.core_memory_minguk if st.session_state.core_memory_minguk else "기록 없음")
-            
-            st.divider()
-            
-            st.subheader("🗑️ 기록 리셋")
-            delete_confirm = st.checkbox("🚨 민국이의 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
-            if delete_confirm:
-                if st.button("✅ 영구 삭제 실행", use_container_width=True):
-                    supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
-                    st.session_state.pop("chat_history_minguk", None)
-                    st.session_state.pop("inventory_minguk", None)
-                    st.session_state.pop("core_memory_minguk", None)
-                    st.session_state.pop("affection_minguk", None)
-                    st.rerun()
+        col_btn_add, col_btn_menu = st.columns(2)
+        
+        # 👥 대화상대 추가 UI (김민국 방)
+        with col_btn_add:
+            with st.popover("👥 대화상대 추가", use_container_width=True):
+                st.markdown("<h4 style='text-align:center; margin-bottom: 5px;'>누구를 초대할까?</h4>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:center; color:#888; font-size:13px;'>※ 멀티 채팅 기능은 내일 오픈됩니다.</p>", unsafe_allow_html=True)
+                st.write("")
+                col_inv1, col_inv2 = st.columns(2)
+                with col_inv1:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>❄️</div>", unsafe_allow_html=True)
+                    st.button("한겨울", disabled=True, use_container_width=True, key="inv_w_m")
+                with col_inv2:
+                    st.markdown("<div style='text-align:center; font-size:45px; margin-bottom:10px;'>🌸</div>", unsafe_allow_html=True)
+                    st.button("임슬아", disabled=True, use_container_width=True, key="inv_s_m")
+                    
+        # ⚙️ 메뉴 열기 UI
+        with col_btn_menu:
+            with st.popover("⚙️ 메뉴 열기", use_container_width=True):
+                col_m1, col_m2 = st.columns(2)
+                with col_m1:
+                    if st.button("🔙 로비로 이동", use_container_width=True):
+                        st.session_state.page = "lobby"
+                        st.rerun()
+                with col_m2:
+                    theme_label = "🌞 라이트 모드" if st.session_state.theme == "dark" else "🌙 다크 모드"
+                    if st.button(theme_label, key="theme_minguk", use_container_width=True):
+                        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+                        st.rerun()
+                
+                st.divider()
+                
+                st.subheader("💖 현재 호감도")
+                progress_val = max(0, min(affection_score, 100)) 
+                st.write(f"**민국이와의 점수: {affection_score} / 100**")
+                st.progress(progress_val / 100.0)
+                
+                st.divider()
+                
+                col_inv, col_mem = st.columns(2)
+                with col_inv:
+                    st.subheader("🎒 보관함")
+                    if st.session_state.inventory_minguk:
+                        for item in st.session_state.inventory_minguk:
+                            st.success(f"🎁 {item}")
+                    else:
+                        st.info("비어있음")
+                with col_mem:
+                    st.subheader("🧠 기록저장")
+                    st.info(st.session_state.core_memory_minguk if st.session_state.core_memory_minguk else "기록 없음")
+                
+                st.divider()
+                
+                st.subheader("🗑️ 기록 리셋")
+                delete_confirm = st.checkbox("🚨 민국이의 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+                if delete_confirm:
+                    if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_minguk", None)
+                        st.session_state.pop("inventory_minguk", None)
+                        st.session_state.pop("core_memory_minguk", None)
+                        st.session_state.pop("affection_minguk", None)
+                        st.rerun()
 
     if user_input := st.chat_input("민국이에게 메시지 보내기"):
         st.toast('민국이가 당신의 말을 듣고 피식 웃습니다...', icon='👦')
