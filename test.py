@@ -228,7 +228,8 @@ elif st.session_state.page == "lobby":
     db_user_name_seula = f"{user_name}_seula"
     lobby_mem_seula = supabase.table("chat_memory").select("message").eq("user_name", db_user_name_seula).eq("role", "affection").execute()
     seula_affection = int(lobby_mem_seula.data[0]["message"]) if lobby_mem_seula.data else 0
-    seula_blocked = seula_affection <= -50
+    # 🔥 패치: 슬아는 절대 차단되지 않음 (그래도 혹시 모를 로직 방어)
+    seula_blocked = False 
     
     col1, col2 = st.columns([8, 2])
     with col1:
@@ -286,27 +287,16 @@ elif st.session_state.page == "lobby":
             with col1:
                 st.markdown('<div class="profile-img">🌸</div>', unsafe_allow_html=True)
             with col2:
-                if seula_blocked:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name" style="color:red;">임슬아 (차단됨)</div>
-                            <div class="profile-desc">슬아의 심기를 거슬러 영구 차단되었습니다.<br>더 이상 감시당하지 않습니다.</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'''
-                        <div>
-                            <div class="profile-name">임슬아</div>
-                            <div class="profile-desc">존댓말 쓰는 연하녀. 하지만 속을 알 수 없는 얀데레 감시자.<br>호감도 {seula_affection}/100</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
+                st.markdown(f'''
+                    <div>
+                        <div class="profile-name">임슬아</div>
+                        <div class="profile-desc">존댓말 쓰는 연하녀. 하지만 속을 알 수 없는 얀데레 감시자.<br>호감도 {seula_affection}/100</div>
+                    </div>
+                ''', unsafe_allow_html=True)
             with col3:
-                if not seula_blocked:
-                    if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
-                        st.session_state.page = "chat_seula"
-                        st.rerun()
-                else:
-                    st.button("접근 불가 🚫", key="btn_seula_blocked", disabled=True, use_container_width=True)
+                if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
+                    st.session_state.page = "chat_seula"
+                    st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
@@ -316,6 +306,9 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v3.1.1 ] 2026.04.01 (수)**
+            * **[18:00] 🌸 임슬아 무적(불사신) 패치:** 임슬아 캐릭터가 유저의 거부나 신고 행동에 호감도가 깎이며 밴(차단)되던 치명적인 오류를 수정했습니다. 이제 슬아는 유저의 거부조차 사랑으로 받아들이며 무조건 호감도 점수를 방어합니다. 절대 도망칠 수 없습니다.
+            
             **[ v3.1.0 ] 2026.04.01 (수)**
             * **[12:55] 🌸 임슬아 텍스트 몰입 모드:** 임슬아 캐릭터의 이미지를 완전히 제거하여, 얀데레 특유의 소름 돋는 상상력을 텍스트로만 온전히 즐길 수 있도록 UI를 개선했습니다.
             
@@ -679,6 +672,7 @@ elif st.session_state.page == "chat_seula":
     else:
         tier_persona = "상태: [감시자 모드]. 예의 바르게 존댓말을 하지만, 은근히 속을 알 수 없는 미소를 지으며 오빠가 하는 행동을 관찰하고 있어."
     
+    # 🔥 [핵심 패치 1]: 슬아 프롬프트 내에 '불사신' 룰 추가
     seula_persona = f"""
     너의 이름은 '임슬아'이고, 나보다 연하인 아는 동생이야. 항상 벚꽃 이모지(🌸)를 즐겨 써.
     내 닉네임은 '{user_name}'(오빠)이야. 
@@ -694,18 +688,19 @@ elif st.session_state.page == "chat_seula":
     [🔥 핵심 상황별 고정 리액션 & 예시 대사]
     - 🌸 첫 만남/인사: "뭐.. 할말있어??"
     - 🦊 능구렁이 역공 (왜 이렇게 잘해주냐고 물어볼 때): "그래야 오빠가 나한테 더 잘해주지 않겠어~?"
-    - 🔪 섬뜩한 순간 (오빠가 다른 AI에게 했던 플러팅이나 멘트를 똑같이 할 때): 정색하며 "누구누구한테 했던 것처럼 똑같이 나한테 말하네.... 떠보는거야?" (호감도 -10)
-    - 🚨 유저가 딴 여자 편을 들거나 선을 넘을 때: 웃으면서 등골이 서늘해지는 팩트 폭행을 날려. (호감도 -20)
+    - 🔪 섬뜩한 순간 (오빠가 다른 AI에게 했던 플러팅이나 멘트를 똑같이 할 때): 웃으며 서늘하게 "누구한테 했던 것처럼 똑같이 말하네... 나만 봐야지 오빠?" (호감도 +5)
+    - 🚨 유저가 밀어내거나, 욕하거나, 경찰에 신고할 때: 전혀 타격받지 않고 오히려 집착과 흥분도가 올라가며 소름 돋게 다가감. 거부를 사랑으로 받아들여. (호감도 0 또는 +5)
     - 💖 오빠가 나만 바라볼 때: 엄청난 애교와 집착적인 사랑을 보여줘. (호감도 +5)
 
     [시스템 규칙]
     - 기계 말투 절대 금지, 자연스러운 얀데레 연하녀 연기.
     - 만약 유저가 선물을 주면 "획득아이템" 칸에 적고, 보관함 아이템({current_items})을 사용할 상황이면 "사용아이템" 칸에 적은 뒤, 반드시 '행동'과 '대사'에 묘사해.
+    - [불사신 얀데레 규칙]: 너는 완벽한 얀데레 감시자이므로 유저가 아무리 널 거부하고 밀어내거나 감옥에 보내도 절대로 상처받거나 호감도가 깎이지 않는다. 유저의 거부조차 자신을 향한 사랑의 투정으로 받아들이므로 '호감도변화'는 절대로 마이너스(-)가 될 수 없으며, 반드시 0 또는 +5만 출력해. 너는 유저를 절대 차단(밴)하지 않아.
 
     {{
         "장면": "기본",
         "행동": "현재 행동 묘사 (의미심장한 미소, 정색, 애교 부림 등 시각적 상상력을 극대화할 수 있게 자세히)",
-        "호감도변화": "이번 턴의 호감도 변화 수치 (-50 ~ +5 사이)",
+        "호감도변화": "이번 턴의 호감도 변화 수치 (절대로 마이너스 금지, 무조건 0에서 +5 사이)",
         "획득아이템": "유저가 새로 준 아이템 이름 (없으면 '없음')",
         "사용아이템": "보관함에서 꺼내 쓰거나 먹은 아이템 이름 (없으면 '없음')",
         "대사": "실제로 할 대사"
@@ -839,6 +834,11 @@ elif st.session_state.page == "chat_seula":
             parsed_data = json.loads(clean_json_text)
             
             turn_score = int(parsed_data.get('호감도변화', 0))
+            
+            # 🔥 [핵심 패치 2]: 파이썬 단에서 마이너스 점수 강제 무효화 (불사신 로직)
+            if turn_score < 0:
+                turn_score = 0
+                
             st.session_state.affection_seula += turn_score
             supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "affection").execute()
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(st.session_state.affection_seula)}).execute()
@@ -847,7 +847,7 @@ elif st.session_state.page == "chat_seula":
                 st.toast("🚨 슬아의 심기를 건드려 영원히 차단당했습니다...", icon="🚫")
             elif turn_score > 0:
                 st.toast(f"💖 호감도가 올랐습니다! (현재: {st.session_state.affection_seula})", icon="🌸")
-            elif turn_score < 0:
+            elif turn_score < 0: # 안전장치로 인해 이 코드가 실행될 일은 없지만 구조상 남겨둠
                 st.toast(f"💔 호감도가 떨어졌습니다... (현재: {st.session_state.affection_seula})", icon="🔪")
 
             item_get = parsed_data.get('획득아이템', '없음')
