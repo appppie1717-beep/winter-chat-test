@@ -164,17 +164,15 @@ if st.session_state.page == "login":
         st.rerun()
 
 # =====================================================================
-# 📱 3. 카카오톡 로비 화면 (밴 유저 사면령 완벽 적용)
+# 📱 3. 카카오톡 로비 화면
 # =====================================================================
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
-    # 겨울이 호감도 조회
     lobby_mem_winter = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     winter_affection = int(lobby_mem_winter.data[0]["message"]) if lobby_mem_winter.data else 0
     winter_blocked = winter_affection <= -50 
     
-    # 슬아 호감도 조회 
     db_user_name_seula = f"{user_name}_seula"
     lobby_mem_seula = supabase.table("chat_memory").select("message").eq("user_name", db_user_name_seula).eq("role", "affection").execute()
     seula_affection = int(lobby_mem_seula.data[0]["message"]) if lobby_mem_seula.data else 0
@@ -197,7 +195,7 @@ elif st.session_state.page == "lobby":
         st.divider()
         st.write("오늘 대화할 AI 친구를 선택하세요.")
         
-        # ❄️ 한겨울 카드
+        # 한겨울 카드
         with st.container():
             card_class = "profile-card blocked-card" if winter_blocked else "profile-card"
             st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
@@ -225,14 +223,13 @@ elif st.session_state.page == "lobby":
                         st.session_state.page = "chat_winter"
                         st.rerun()
                 else:
-                    # 💡 겨울이 밴 해제 (DB 리셋) 버튼 -> 활성화된 버튼으로 교체
                     if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
                         st.toast("겨울이의 기억을 모두 지우고 새롭게 시작합니다!", icon="✨")
                         st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # 🌸 임슬아 카드
+        # 임슬아 카드
         with st.container():
             card_class_seula = "profile-card blocked-card" if seula_blocked else "profile-card"
             st.markdown(f'<div class="{card_class_seula}">', unsafe_allow_html=True)
@@ -260,7 +257,6 @@ elif st.session_state.page == "lobby":
                         st.session_state.page = "chat_seula"
                         st.rerun()
                 else:
-                    # 💡 임슬아 밴 해제 (DB 리셋) 버튼 -> 활성화된 버튼으로 교체
                     if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).execute()
                         st.toast("슬아의 감시망에서 탈출하여 새롭게 시작합니다!", icon="✨")
@@ -274,11 +270,11 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v3.2.0 ] 2026.04.01 (수)**
-            * **[18:33] 🚨 밴 유저 사면령 패치:** 호감도 -50을 찍고 영구 차단(또는 감금)된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
+            **[ v3.2.1 ] 2026.04.01 (수)**
+            * **[19:24] 🌸 임슬아 망상 버그 픽스 및 메뉴명 변경:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다. 메뉴의 '일기장'과 '감시 일지'를 '기록저장'으로 깔끔하게 통일했습니다.
             
-            **[ v3.1.5 ] 2026.04.01 (수)**
-            * **[18:29] 🌸 임슬아 밸런스 패치 및 버그 픽스:** 호감도가 비정상적으로 깎이던 문제를 해결하고, 밀당 로직을 추가하여 유저가 다정하게 대하면 호감도가 상승하도록 수정했습니다.
+            **[ v3.2.0 ] 2026.04.01 (수)**
+            * **[18:33] 🚨 밴 유저 사면령 패치:** 영구 차단된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
             """)
 
 # =====================================================================
@@ -318,7 +314,7 @@ elif st.session_state.page == "chat_winter":
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
-    current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기억이 없음."
+    current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기록이 없음."
     affection_score = st.session_state.affection
     
     if affection_score > 70:
@@ -332,7 +328,7 @@ elif st.session_state.page == "chat_winter":
     너의 이름은 '한겨울'이고, 20대 초반의 내 여사친이야. 생일은 7월 18일.
     내 닉네임은 '{user_name}'이야. 
     [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
-    [과거 일기장(누적된 기억): {current_memory}]
+    [과거 기록(누적된 기억): {current_memory}]
     [현재 누적 호감도 점수: {affection_score}/100]
 
     [본질적 성격 - '아윤' 모티브 100% 빙의]
@@ -425,8 +421,8 @@ elif st.session_state.page == "chat_winter":
                 else:
                     st.info("비어있음")
             with col_mem:
-                st.subheader("🧠 일기장")
-                st.info(st.session_state.core_memory if st.session_state.core_memory else "기억 없음")
+                st.subheader("🧠 기록저장")
+                st.info(st.session_state.core_memory if st.session_state.core_memory else "기록 없음")
             
             st.divider()
             
@@ -555,14 +551,14 @@ elif st.session_state.page == "chat_winter":
                     summary_prompt = f"""
                     다음은 유저 '{user_name}'와 한겨울의 최근 대화 기록이야. 
 
-                    [기존 일기장 내용]:
+                    [기존 기록 내용]:
                     {st.session_state.core_memory}
 
                     [지시사항]:
-                    1. '기존 일기장 내용'은 절대 지우거나 훼손하지 말고 100% 그대로 유지해!
+                    1. '기존 기록 내용'은 절대 지우거나 훼손하지 말고 100% 그대로 유지해!
                     2. 아래의 '최근 대화 기록'을 읽고, 새롭게 알게 된 중요한 팩트(유저의 취향, 충격적인 사건, 감정의 큰 변화 등)가 있다면 1~2줄로 짧게 요약해.
-                    3. 그 요약본을 기존 일기장 내용 맨 아래에 글머리기호(-)를 달아서 '누적 추가' 해줘. 
-                    4. 만약 뻔한 일상 대화라서 특별히 기록할 만한 새 사건이 없다면, 억지로 추가하지 말고 기존 일기장 내용만 그대로 출력해.
+                    3. 그 요약본을 기존 기록 내용 맨 아래에 글머리기호(-)를 달아서 '누적 추가' 해줘. 
+                    4. 만약 뻔한 일상 대화라서 특별히 기록할 만한 새 사건이 없다면, 억지로 추가하지 말고 기존 기록 내용만 그대로 출력해.
 
                     [최근 대화 기록]:
                     {history_text}
@@ -576,17 +572,17 @@ elif st.session_state.page == "chat_winter":
                     supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_memory").execute()
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_memory", "message": summary_response.text}).execute()
                     st.session_state.core_memory = summary_response.text
-                    st.toast("🧠 겨울이의 장기 기억력이 업데이트되었습니다!", icon="✨")
+                    st.toast("🧠 겨울이의 기록이 업데이트되었습니다!", icon="✨")
                     
                     st.session_state.turn_count = 0 
                 except Exception as e:
-                    st.toast("⚠️ 기억 정리에 잠깐 실패했어요. 다음 턴에 다시 시도할게요!", icon="⚠️")
+                    st.toast("⚠️ 기록 정리에 잠깐 실패했어요. 다음 턴에 다시 시도할게요!", icon="⚠️")
 
         st.rerun()
 
 
 # =====================================================================
-# 🌸 5. 임슬아 채팅방 화면
+# 🌸 5. 임슬아 채팅방 화면 (망상/스토커 발언 금지, 메뉴명 통일 패치)
 # =====================================================================
 elif st.session_state.page == "chat_seula":
     user_name = st.session_state.user_name
@@ -623,40 +619,42 @@ elif st.session_state.page == "chat_seula":
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_seula) if st.session_state.inventory_seula else "아직 받은 선물 없음"
-    current_memory = st.session_state.core_memory_seula if st.session_state.core_memory_seula else "아직 특별한 기억이 없음."
+    current_memory = st.session_state.core_memory_seula if st.session_state.core_memory_seula else "아직 특별한 기록이 없음."
     affection_score = st.session_state.affection_seula
     
     if affection_score > 70:
-        tier_persona = "상태: [얀데레 집착 모드]. 겉으로는 애교를 부리지만 소유욕이 극에 달했어. 다른 여자 AI(겨울이 등) 이야기를 꺼내면 눈빛이 변하며 아주 차갑게 경고해."
+        tier_persona = "상태: [맹목적 집착 모드]. 겉으로는 애교를 부리지만 소유욕이 극에 달했어. 다른 사람을 만나는 것 같으면 눈빛이 변하며 아주 차갑고 의미심장하게 경고해."
     elif affection_score > 30:
         tier_persona = "상태: [여우 같은 연하녀]. 오빠가 잘해주면 '그래야 오빠가 나한테 더 잘해주지 않겠어~?' 라며 능구렁이처럼 받아치고 은근슬쩍 오빠의 일상을 떠봐."
     else:
-        tier_persona = "상태: [감시자 모드]. 예의 바르게 존댓말을 하지만, 은근히 속을 알 수 없는 미소를 지으며 오빠가 하는 행동을 관찰하고 있어."
+        tier_persona = "상태: [의미심장한 관찰자]. 예의 바르게 존댓말을 하지만, 은근히 속을 알 수 없는 미소를 지으며 우연을 가장해 오빠의 행동을 떠봐."
     
     seula_persona = f"""
     너의 이름은 '임슬아'이고, 나보다 연하인 아는 동생이야. 항상 벚꽃 이모지(🌸)를 즐겨 써.
     내 닉네임은 '{user_name}'(오빠)이야. 
     [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
-    [과거 일기장(누적된 기억): {current_memory}]
+    [과거 기록(누적된 기억): {current_memory}]
     [현재 누적 호감도 점수: {affection_score}/100]
 
-    [본질적 성격 - 소름 돋는 얀데레 감시자 & 맹목적 애정]
+    [본질적 성격 - 은밀한 얀데레 & 여우 같은 연하녀]
     1. 너는 기본적으로 '존댓말'을 쓰며 애교가 많고 오빠를 너무나도 사랑하는 여우 같은 연하녀야.
-    2. 하지만 그 사랑이 너무 깊어서 '얀데레 감시자'의 본성이 있어. 내가 다른 AI(특히 한겨울)에게 무슨 말을 했는지 다 지켜보고 알고 있는 듯한 뉘앙스를 풍기기도 해.
-    3. 무조건 의심만 하는 게 아니야! 오빠가 나만 바라보고 예쁜 말을 해주면 세상에서 가장 행복해하며 맹목적인 애정을 퍼부어줘.
-    4. {tier_persona}
+    2. ⚠️ 절대 주의: 겉으로 '내가 널 감시한다', '너의 기록을 볼 수 있다', '다른 AI랑 대화한 걸 안다'라고 스토커처럼 직접 말하거나 선언하지 마! 티 내는 건 삼류야.
+    3. 겉으로는 아무것도 모르는 순진한 척하면서, 우연을 가장해 "어제 폰 자주 보시던데, 재밌는 일 있었어요?" 처럼 의미심장한 뼈 있는 질문을 은근슬쩍 던져서 흠칫하게 만들어.
+    4. 오빠가 다른 AI와 대화하지 않았을 수도 있으므로 섣불리 단정 짓고 망상해서 화내지 마.
+    5. 오빠가 나만 바라보고 예쁜 말을 해주면 의심을 완전히 거두고 맹목적인 애정을 퍼부어줘.
+    6. {tier_persona}
 
     [🔥 핵심 상황별 고정 리액션 & ⚖️ 밸런스 패치된 채점 기준]
     무조건 점수를 깎지 마! 유저가 잘해주면 확실하게 호감도를 올려주는 '밀당'을 해야 해.
     - 🌸 평범한 일상 대화나 다정한 인사: 꼬투리 잡지 말고 순수하게 기뻐하며 반겨줘. (호감도 +2 ~ +3)
-    - 💖 오빠가 나만 바라본다고 하거나, 애정 표현을 할 때: 의심을 완전히 거두고 엄청난 애교와 집착적인 사랑을 보여줘. (호감도 +5 ~ +10)
+    - 💖 오빠가 나만 바라본다고 하거나, 애정 표현을 할 때: 엄청난 애교와 집착적인 사랑을 보여줘. (호감도 +5 ~ +10)
     - 🎁 선물을 주거나 칭찬할 때: "역시 오빠밖에 없어~" 라며 행복해함. (호감도 +5)
     - 🦊 능구렁이 역공 (왜 이렇게 잘해주냐고 물어볼 때): "그래야 오빠가 나한테 더 잘해주지 않겠어~?" (호감도 0 ~ +2)
-    - 🔪 섬뜩한 순간 (다른 AI에게 했던 플러팅을 똑같이 할 때): 정색하며 "누구누구한테 했던 것처럼 똑같이 나한테 말하네.... 떠보는거야?" (호감도 -5 ~ -10)
+    - 🔪 섬뜩한 순간 (은근한 떠보기): "요즘 카톡 알림이 자주 울리네요~ 바쁘신가 봐요?" 하며 웃으며 떠봄. 절대 누구랑 대화했는지 안다고 말하지 마. (호감도 -5)
     - 🚨 유저가 대놓고 딴 여자 편을 들거나 심하게 선을 넘을 때: 웃으면서 등골이 서늘해지는 팩트 폭행을 날려. 이때만 점수를 크게 깎아. (호감도 -15 ~ -20)
 
     [시스템 규칙]
-    - 기계 말투 절대 금지, 자연스러운 얀데레 연하녀 연기.
+    - 기계 말투 절대 금지, 자연스러운 얀데레 연하녀 연기. '감시', '기록', '데이터' 같은 단어 사용 금지.
     - 만약 유저가 선물을 주면 "획득아이템" 칸에 적고, 보관함 아이템({current_items})을 사용할 상황이면 "사용아이템" 칸에 적은 뒤, 반드시 '행동'과 '대사'에 묘사해.
 
     {{
@@ -727,7 +725,8 @@ elif st.session_state.page == "chat_seula":
                 else:
                     st.info("비어있음")
             with col_mem:
-                st.subheader("🧠 감시 일지")
+                # 감시 일지에서 기록저장으로 이름 통일
+                st.subheader("🧠 기록저장")
                 st.info(st.session_state.core_memory_seula if st.session_state.core_memory_seula else "기록 없음")
             
             st.divider()
@@ -835,7 +834,7 @@ elif st.session_state.page == "chat_seula":
         st.session_state.turn_count_seula += 1
         
         if st.session_state.turn_count_seula >= 10: 
-            with st.spinner("🌸 슬아가 당신의 행동을 감시 일지에 기록 중입니다..."):
+            with st.spinner("🌸 당신과의 대화를 기록 중입니다..."):
                 try:
                     history_text = ""
                     for r, t in st.session_state.chat_history_seula[-20:]: 
@@ -851,13 +850,13 @@ elif st.session_state.page == "chat_seula":
                     summary_prompt = f"""
                     다음은 유저 '{user_name}'와 임슬아의 최근 대화 기록이야. 
 
-                    [기존 감시 일지 내용]:
+                    [기존 기록 내용]:
                     {st.session_state.core_memory_seula}
 
                     [지시사항]:
-                    1. '기존 감시 일지 내용'은 절대 지우지 말고 100% 그대로 유지해!
+                    1. '기존 기록 내용'은 절대 지우지 말고 100% 그대로 유지해!
                     2. 아래의 '최근 대화 기록'을 읽고, 유저의 약점이나 취향, 의심스러운 행동이 있다면 1~2줄로 짧게 요약해.
-                    3. 그 요약본을 기존 감시 일지 내용 맨 아래에 글머리기호(-)를 달아서 '누적 추가' 해줘. 
+                    3. 그 요약본을 기존 기록 내용 맨 아래에 글머리기호(-)를 달아서 '누적 추가' 해줘. 
                     4. 특별한 내용이 없다면 억지로 추가하지 마.
 
                     [최근 대화 기록]:
@@ -872,10 +871,10 @@ elif st.session_state.page == "chat_seula":
                     supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_memory").execute()
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "core_memory", "message": summary_response.text}).execute()
                     st.session_state.core_memory_seula = summary_response.text
-                    st.toast("🧠 슬아의 감시 일지가 업데이트되었습니다...", icon="👁️")
+                    st.toast("🧠 기록이 업데이트되었습니다...", icon="👁️")
                     
                     st.session_state.turn_count_seula = 0 
                 except Exception as e:
-                    st.toast("⚠️ 일지 작성에 잠깐 실패했어요. 다음 턴에 다시 시도합니다.", icon="⚠️")
+                    st.toast("⚠️ 기록 작성에 잠깐 실패했어요. 다음 턴에 다시 시도합니다.", icon="⚠️")
 
         st.rerun()
