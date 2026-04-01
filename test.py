@@ -225,7 +225,7 @@ elif st.session_state.page == "lobby":
                 else:
                     if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
-                        st.toast("겨울이의 기억을 모두 지우고 새롭게 시작합니다!", icon="✨")
+                        st.toast("겨울이의 기록을 모두 지우고 새롭게 시작합니다!", icon="✨")
                         st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -259,7 +259,7 @@ elif st.session_state.page == "lobby":
                 else:
                     if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).execute()
-                        st.toast("슬아의 감시망에서 탈출하여 새롭게 시작합니다!", icon="✨")
+                        st.toast("슬아의 기록에서 탈출하여 새롭게 시작합니다!", icon="✨")
                         st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -270,8 +270,11 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v3.2.2 ] 2026.04.01 (수)**
+            * **[19:34] 🛠️ 용어 완벽 통일 및 세부 버그 픽스:** 메뉴명뿐만 아니라 AI 프롬프트 지시사항 내부의 모든 '일기장', '감시 일지' 텍스트를 '기록(기록저장)'으로 완벽하게 통일하여 AI의 페르소나 오류를 원천 차단했습니다.
+            
             **[ v3.2.1 ] 2026.04.01 (수)**
-            * **[19:24] 🌸 임슬아 망상 버그 픽스 및 메뉴명 변경:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다. 메뉴의 '일기장'과 '감시 일지'를 '기록저장'으로 깔끔하게 통일했습니다.
+            * **[19:24] 🌸 임슬아 망상 버그 픽스 및 메뉴명 변경:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다.
             
             **[ v3.2.0 ] 2026.04.01 (수)**
             * **[18:33] 🚨 밴 유저 사면령 패치:** 영구 차단된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
@@ -426,8 +429,8 @@ elif st.session_state.page == "chat_winter":
             
             st.divider()
             
-            st.subheader("🗑️ 기억 리셋")
-            delete_confirm = st.checkbox("🚨 진짜 기억을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+            st.subheader("🗑️ 기록 리셋")
+            delete_confirm = st.checkbox("🚨 진짜 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
             if delete_confirm:
                 if st.button("✅ 영구 삭제 실행", use_container_width=True):
                     supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
@@ -535,7 +538,7 @@ elif st.session_state.page == "chat_winter":
         st.session_state.turn_count += 1
         
         if st.session_state.turn_count >= 10: 
-            with st.spinner("❄️ 겨울이가 당신과의 기억을 정리하고 있습니다..."):
+            with st.spinner("❄️ 겨울이가 당신과의 기록을 정리하고 있습니다..."):
                 try:
                     history_text = ""
                     for r, t in st.session_state.chat_history[-20:]: 
@@ -582,7 +585,7 @@ elif st.session_state.page == "chat_winter":
 
 
 # =====================================================================
-# 🌸 5. 임슬아 채팅방 화면 (망상/스토커 발언 금지, 메뉴명 통일 패치)
+# 🌸 5. 임슬아 채팅방 화면
 # =====================================================================
 elif st.session_state.page == "chat_seula":
     user_name = st.session_state.user_name
@@ -725,14 +728,13 @@ elif st.session_state.page == "chat_seula":
                 else:
                     st.info("비어있음")
             with col_mem:
-                # 감시 일지에서 기록저장으로 이름 통일
                 st.subheader("🧠 기록저장")
                 st.info(st.session_state.core_memory_seula if st.session_state.core_memory_seula else "기록 없음")
             
             st.divider()
             
-            st.subheader("🗑️ 기억 리셋")
-            delete_confirm = st.checkbox("🚨 슬아의 기억을 삭제하시겠습니까? (되돌릴 수 없습니다)")
+            st.subheader("🗑️ 기록 리셋")
+            delete_confirm = st.checkbox("🚨 슬아의 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")
             if delete_confirm:
                 if st.button("✅ 영구 삭제 실행", use_container_width=True):
                     supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
