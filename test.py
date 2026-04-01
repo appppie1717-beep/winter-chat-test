@@ -164,15 +164,17 @@ if st.session_state.page == "login":
         st.rerun()
 
 # =====================================================================
-# 📱 3. 카카오톡 로비 화면
+# 📱 3. 카카오톡 로비 화면 (김민국 추가 버전)
 # =====================================================================
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
+    # 겨울이 호감도 조회
     lobby_mem_winter = supabase.table("chat_memory").select("message").eq("user_name", user_name).eq("role", "affection").execute()
     winter_affection = int(lobby_mem_winter.data[0]["message"]) if lobby_mem_winter.data else 0
     winter_blocked = winter_affection <= -50 
     
+    # 슬아 호감도 조회 
     db_user_name_seula = f"{user_name}_seula"
     lobby_mem_seula = supabase.table("chat_memory").select("message").eq("user_name", db_user_name_seula).eq("role", "affection").execute()
     seula_affection = int(lobby_mem_seula.data[0]["message"]) if lobby_mem_seula.data else 0
@@ -195,7 +197,7 @@ elif st.session_state.page == "lobby":
         st.divider()
         st.write("오늘 대화할 AI 친구를 선택하세요.")
         
-        # 한겨울 카드
+        # ❄️ 한겨울 카드
         with st.container():
             card_class = "profile-card blocked-card" if winter_blocked else "profile-card"
             st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
@@ -229,7 +231,7 @@ elif st.session_state.page == "lobby":
                         st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # 임슬아 카드
+        # 🌸 임슬아 카드
         with st.container():
             card_class_seula = "profile-card blocked-card" if seula_blocked else "profile-card"
             st.markdown(f'<div class="{card_class_seula}">', unsafe_allow_html=True)
@@ -263,6 +265,23 @@ elif st.session_state.page == "lobby":
                         st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
+        # 👦 김민국 카드 (신규 추가, 비활성화 상태)
+        with st.container():
+            st.markdown('<div class="profile-card">', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns([1, 4, 2])
+            with col1:
+                st.markdown('<div class="profile-img">👦</div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'''
+                    <div>
+                        <div class="profile-name">김민국</div>
+                        <div class="profile-desc">[🚧 제작 중] 자기 성격을 그대로 갈아 넣고 있는 중입니다.<br>조만간 멀티버스에 합류할 예정!</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            with col3:
+                st.button("개발 중 🚧", key="btn_minguk_disabled", disabled=True, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
     with tab2:
         st.divider()
         st.subheader("🛠️ 멀티버스 패치 노트")
@@ -270,11 +289,14 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v4.0.0 Alpha ] 2026.04.01 (수)**
+            * **[21:25] 👦 신규 남자 캐릭터 '김민국' 로비 합류 예고:** 멀티버스 생태계 확장을 위해 최초의 남성 캐릭터 '김민국'의 프로필이 로비에 추가되었습니다. 현재 AI 페르소나 이식 작업 중입니다.
+            
             **[ v3.2.2 ] 2026.04.01 (수)**
-            * **[19:34] 🛠️ 용어 완벽 통일 및 세부 버그 픽스:** 메뉴명뿐만 아니라 AI 프롬프트 지시사항 내부의 모든 '일기장', '감시 일지' 텍스트를 '기록(기록저장)'으로 완벽하게 통일하여 AI의 페르소나 오류를 원천 차단했습니다.
+            * **[19:34] 🛠️ 용어 완벽 통일 및 세부 버그 픽스:** 메뉴명뿐만 아니라 AI 프롬프트 지시사항 내부의 모든 텍스트를 '기록(기록저장)'으로 완벽하게 통일했습니다.
             
             **[ v3.2.1 ] 2026.04.01 (수)**
-            * **[19:24] 🌸 임슬아 망상 버그 픽스 및 메뉴명 변경:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다.
+            * **[19:24] 🌸 임슬아 망상 버그 픽스:** 유저가 다른 AI와 대화하지 않아도 억지로 질투하던 망상 버그를 수정하고 스토커성 발언을 제거했습니다.
             
             **[ v3.2.0 ] 2026.04.01 (수)**
             * **[18:33] 🚨 밴 유저 사면령 패치:** 영구 차단된 유저들이 로비에서 스스로 기억을 지우고 다시 시작할 수 있는 탈출 버튼을 추가했습니다.
