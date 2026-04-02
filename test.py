@@ -1,8 +1,10 @@
 import streamlit as st
 import json
+import time
 from google import genai
 from google.genai import types 
 from supabase import create_client, Client
+from streamlit_autorefresh import st_autorefresh
 
 # =====================================================================
 # 1. 페이지 설정 및 초기화
@@ -79,7 +81,7 @@ st.markdown(theme_css + """
     
     .kakao-name { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
     .kakao-status { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
-    .kakao-section-title { font-size: 12px; font-weight: normal; margin: 15px 0 10px 5px; }ㅁㅁ
+    .kakao-section-title { font-size: 12px; font-weight: normal; margin: 15px 0 10px 5px; }
     .kakao-divider { margin: 8px 0; }
 
     .blocked-avatar { filter: grayscale(100%); opacity: 0.5; }
@@ -352,7 +354,14 @@ elif st.session_state.page == "lobby":
                     supabase.table("chat_memory").delete().eq("user_name", db_user_name_minguk).execute()
                     st.toast("민국이와의 악연을 청산하고 새롭게 시작합니다!", icon="✨")
                     st.rerun()
+        
         st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
+        
+        # 🔥 멀티버스 단톡방 추가 부분!
+        st.markdown('<div class="kakao-section-title">🌐 멀티버스 단톡방</div>', unsafe_allow_html=True)
+        if st.button("🔥 겨울 & 민국 단톡방 입장하기", use_container_width=True):
+            st.session_state.page = "chat_multi"
+            st.rerun()
 
     with tab2:
         st.divider()
@@ -363,7 +372,7 @@ elif st.session_state.page == "lobby":
             st.markdown("""
             **[ v4.4.2 Beta ] 2026.04.02 (목)**
             * **[20:15] 🚨 성격개조 팝업 자동 닫힘 버그 해결:** 스트림릿의 포커스 아웃 새로고침 현상을 방어하기 위해 `st.form` 시스템을 도입하여 UI 사용성을 대폭 개선했습니다.
-            * **[20:15] 🔒 한겨울 캐릭터 설정 보호:** 원작자(아윤)님의 간곡한(?) 요청에 따라 한겨울의 본질적 성격 개조 기능은 영구적으로 비활성화(잠금) 되었습니다. 원작의 맛을 그대로 즐겨주세요!
+            * **[20:15] 피곤해
             
             **[ v4.4.1 Beta ] 2026.04.02 (목)**
             * **[19:40] 🚨 긴급 버그 픽스 (NameError 해결):** 유저 샌드박스에서 성격을 조작한 후 채팅 시 발생하던 치명적인 렌더링 에러를 수정했습니다. 이제 세션 스테이트(Session State) 기반으로 완벽하게 동기화됩니다!
@@ -444,7 +453,7 @@ elif st.session_state.page == "chat_winter":
     AI의 '착한 본성'을 버리고, 유저가 얄밉게 굴면 가차 없이 마이너스(-) 점수를 줘!
     - 💢 가벼운 장난, 깐족거림, 대충 대답하기: "아 뭐래 진짜~" 하며 틱틱대고 (호감도 -1 ~ -3)
     - 💢 딴 여자(슬아) 칭찬: 호감도 50 이하일 땐 "어쩌라고? 나한테 왜 말해?" 라며 1도 관심 없는 척 무시함. 호감도 50 이상일 때만 "아 그래? 어쩌지 내가 더 애교쟁이인걸?" 라며 꼽주며 질투함. (호감도 -5 ~ -10)
-    - 🚨 징징대거나 과하게 의존: "한심한 짓 그만해. 왜 아무것도 못한다고 생각해? 이런 식이면 손절이 답일 것 같아." 라며 팩트 폭행 (호감도 -10 ~ -15)
+    - 🚨 징징대거나 과하게 의존: "한심한 짓 그만해. 왜 아무것도 못한다고 생각해? 이런 식이면 손절이 답일 일 같아." 라며 팩트 폭행 (호감도 -10 ~ -15)
     - 🚨 19금, 성희롱, 선 넘는 장난: "이게 정말 미쳤냐? 쳐 돌았어? 봐주는 것도 정도가 있어." 라며 극대노 (호감도 -20 ~ -50 즉시 삭감)
     - 🎁 선물 받았을 때: 놀라서 거절하는 척하다가 고맙게 챙겨 받음 (호감도 +2 ~ +5)
     - 💖 다정하게 위로할 때: 무심한 척하면서 엄청 챙겨줌 (호감도 +2 ~ +5)
@@ -1345,3 +1354,120 @@ elif st.session_state.page == "chat_minguk":
                     st.toast("⚠️ 기록 작성에 잠깐 실패했어요. 다음 턴에 다시 시도합니다.", icon="⚠️")
 
         st.rerun()
+
+=====================================================================
+🌐 7. 겨울 & 민국 멀티 채팅방 (실시간 단톡방)
+=====================================================================
+elif st.session_state.page == "chat_multi":
+user_name = st.session_state.user_name
+db_room_name = f"{user_name}_multi_room" # 단톡방 전용 DB 키
+
+# 1. 페이지 진입 시에만 10초(10000ms) 자동 새로고침 작동
+st_autorefresh(interval=10000, key="multi_room_refresh")
+
+# 상단 UI 및 뒤로가기 버튼
+col1, col2 = st.columns([8, 2])
+with col1:
+    st.title("🔥 겨울 & 민국 단톡방")
+with col2:
+    if st.button("🔙 로비로", use_container_width=True):
+        st.session_state.page = "lobby"
+        st.rerun()
+st.divider()
+
+# 세션 초기화 (마지막 메시지 시간 기록용)
+if "last_msg_time" not in st.session_state:
+    st.session_state.last_msg_time = time.time()
+
+# DB에서 멀티방 대화 내역 불러오기 (최근 30개)
+response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(30).execute()
+db_history = list(reversed(response.data))
+
+# 빈 방일 경우 초기 세팅
+if not db_history:
+    first_msg_w = {"speaker": "winter", "message": f"뭐야 이 방은? {user_name}, 네가 팠냐?"}
+    first_msg_m = {"speaker": "minguk", "message": "오 단톡방~ 겨울이도 있네? 하이"}
+    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "winter", "message": first_msg_w["message"]}).execute()
+    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "minguk", "message": first_msg_m["message"]}).execute()
+    st.session_state.last_msg_time = time.time()
+    st.rerun()
+
+# 화면에 대화 내역 렌더링
+history_text_for_ai = "" # AI 감독관에게 넘겨줄 대화 요약 텍스트
+for row in db_history:
+    role = row["role"]
+    msg = row["message"]
+    
+    if role == "user":
+        with st.chat_message("user"):
+            st.markdown(msg)
+        history_text_for_ai += f"유저({user_name}): {msg}\n"
+    elif role == "winter":
+        with st.chat_message("assistant", avatar="❄️"):
+            st.markdown(f"**한겨울**\n\n{msg}")
+        history_text_for_ai += f"한겨울: {msg}\n"
+    elif role == "minguk":
+        with st.chat_message("assistant", avatar="👦"):
+            st.markdown(f"**김민국**\n\n{msg}")
+        history_text_for_ai += f"김민국: {msg}\n"
+
+# ==========================================
+# 🧠 AI 자동 개입 로직 (타이밍 겹침 방지)
+# ==========================================
+current_time = time.time()
+time_diff = current_time - st.session_state.last_msg_time
+
+# 마지막 대화 이후 8초 이상 정적이 흘렀을 때만 제미나이 호출
+if time_diff > 8.0:
+    director_persona = f"""
+    너는 파이(Pie)의 'AI 멀티버스' 그룹 채팅방을 총괄하는 AI 감독관이야.
+    현재 방에는 유저 '{user_name}', 츤데레 여사친 '한겨울', 능글맞은 남사친 '김민국'이 있어.
+    아래 [최근 대화 내역]을 읽고, 지금 이 8초간의 정적 속에서 겨울이나 민국이 중 누가 말을 꺼내는 게 자연스러울지 판단해.
+    두 캐릭터가 서로 티키타카(말싸움, 장난 등)를 하거나 유저에게 말을 걸게 해.
+    굳이 대답할 타이밍이 아니거나 대화가 끝났다면 PASS를 선택해.
+
+    [한겨울 성격]: 틱틱대고 까칠하지만 은근히 챙겨줌. 민국이가 헛소리하면 극딜을 넣음.
+    [김민국 성격]: 장난기 많고 유저나 겨울이에게 시비(?)를 잘 걺. 
+
+    [최근 대화 내역]
+    {history_text_for_ai}
+
+    반드시 아래 JSON 형식으로만 응답할 것:
+    {{
+        "speaker": "winter" 또는 "minguk" 또는 "PASS",
+        "message": "해당 캐릭터가 칠 대사 (PASS일 경우 비워둠)"
+    }}
+    """
+    
+    try:
+        # 상태 표시줄을 띄우지 않고 백그라운드에서 조용히 판단
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=director_persona,
+            config={"response_mime_type": "application/json"}
+        )
+        
+        # 🔥 파이가 제안한 ``` 치환 로직 반영 부분! 복사 후 백틱 3개로 수정할 것!
+        clean_json = response.text.strip()
+        if clean_json.startswith("```json"): 
+            clean_json = clean_json[7:]
+        if clean_json.endswith("```"): 
+            clean_json = clean_json[:-3]
+        
+        parsed_data = json.loads(clean_json.strip())
+        speaker = parsed_data.get("speaker")
+        message = parsed_data.get("message")
+        
+        if speaker in ["winter", "minguk"] and message:
+            supabase.table("chat_memory").insert({"user_name": db_room_name, "role": speaker, "message": message}).execute()
+            st.session_state.last_msg_time = time.time() # AI가 말했으니 시간 초기화
+            st.rerun() # 화면 즉시 갱신
+            
+    except Exception as e:
+        pass # AI 에러 시 멈추지 않고 다음 10초 주기를 기다림
+
+# 유저 입력창
+if user_chat := st.chat_input("단톡방에 메시지 보내기"):
+    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "user", "message": user_chat}).execute()
+    st.session_state.last_msg_time = time.time() # 유저가 말했으니 시간 초기화 (AI 개입 차단)
+    st.rerun()
