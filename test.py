@@ -262,6 +262,7 @@ elif st.session_state.page == "lobby":
                     if st.button("💾 저장하기", key="save_w_persona"):
                         supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "persona_winter").execute()
                         supabase.table("chat_memory").insert({"user_name": user_name, "role": "persona_winter", "message": new_w_persona}).execute()
+                        st.session_state.custom_persona_winter = new_w_persona # 세션 즉시 동기화
                         st.toast("겨울이의 성격이 업데이트 되었습니다!", icon="✨")
             else:
                 if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
@@ -303,6 +304,7 @@ elif st.session_state.page == "lobby":
                     if st.button("💾 저장하기", key="save_s_persona"):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).eq("role", "persona_seula").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name_seula, "role": "persona_seula", "message": new_s_persona}).execute()
+                        st.session_state.custom_persona_seula = new_s_persona # 세션 즉시 동기화
                         st.toast("슬아의 성격이 업데이트 되었습니다!", icon="✨")
             else:
                 if st.button("🏃‍♂️ 탈출하기", key="unban_seula", use_container_width=True):
@@ -344,6 +346,7 @@ elif st.session_state.page == "lobby":
                     if st.button("💾 저장하기", key="save_m_persona"):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_minguk).eq("role", "persona_minguk").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name_minguk, "role": "persona_minguk", "message": new_m_persona}).execute()
+                        st.session_state.custom_persona_minguk = new_m_persona # 세션 즉시 동기화
                         st.toast("민국이의 성격이 업데이트 되었습니다!", icon="✨")
             else:
                 if st.button("🙇‍♂️ 바짓가랑이", key="unban_minguk", use_container_width=True):
@@ -359,6 +362,9 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v4.4.1 Beta ] 2026.04.02 (목)**
+            * **[19:40] 🚨 긴급 버그 픽스 (NameError 해결):** 유저 샌드박스에서 성격을 조작한 후 채팅 시 발생하던 치명적인 렌더링 에러를 수정했습니다. 이제 세션 스테이트(Session State) 기반으로 완벽하게 동기화됩니다!
+            
             **[ v4.4.0 Beta ] 2026.04.02 (목)**
             * **[19:30] 🧬 유저 샌드박스: 페르소나 성격 개조 기능 추가:** 로비에서 각 AI의 성격을 직접 조작하고 저장할 수 있는 기능이 추가되었습니다. JSON 핵심 룰과 호감도 시스템은 보존되며 순수 성격만 튜닝할 수 있습니다.
             
@@ -384,8 +390,8 @@ elif st.session_state.page == "chat_winter":
         st.session_state.core_memory = "" 
         st.session_state.affection = 0 
         
-        # 유저 커스텀 성격 변수 (DB에서 못 찾으면 디폴트 할당)
-        current_custom_persona = DEFAULT_WINTER_PERSONA 
+        # 👉 세션 스테이트에 성격 정보 초기화 (에러 해결 핵심!)
+        st.session_state.custom_persona_winter = DEFAULT_WINTER_PERSONA
 
         for row in db_history:
             if row["role"] == "inventory":
@@ -395,7 +401,7 @@ elif st.session_state.page == "chat_winter":
             elif row["role"] == "affection": 
                 st.session_state.affection = int(row["message"])
             elif row["role"] == "persona_winter":
-                current_custom_persona = row["message"]
+                st.session_state.custom_persona_winter = row["message"]
             elif row["role"] in ["user", "assistant"]:
                 temp_chat_history.append((row["role"], row["message"]))
 
@@ -410,6 +416,9 @@ elif st.session_state.page == "chat_winter":
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory if st.session_state.core_memory else "아직 특별한 기록이 없음."
     affection_score = st.session_state.affection
+    
+    # 👉 렌더링 시 세션에서 안전하게 꺼내 쓰기
+    current_custom_persona = st.session_state.get("custom_persona_winter", DEFAULT_WINTER_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [메가데레/연인]. 말투가 훨씬 부드러워지고 더 자주 환하게 웃어. 유저를 완벽하게 믿고 챙겨줘. '침대_유혹', '포옹_허리' 같은 연출을 쓰며 애정 표현을 숨기지 않아."
@@ -711,8 +720,8 @@ elif st.session_state.page == "chat_seula":
         st.session_state.core_memory_seula = "" 
         st.session_state.affection_seula = 0 
         
-        # 유저 커스텀 성격 변수 (DB에서 못 찾으면 디폴트 할당)
-        current_custom_persona = DEFAULT_SEULA_PERSONA 
+        # 👉 세션 스테이트에 성격 정보 초기화 (에러 해결 핵심!)
+        st.session_state.custom_persona_seula = DEFAULT_SEULA_PERSONA 
         
         for row in db_history:
             if row["role"] == "inventory":
@@ -722,7 +731,7 @@ elif st.session_state.page == "chat_seula":
             elif row["role"] == "affection": 
                 st.session_state.affection_seula = int(row["message"])
             elif row["role"] == "persona_seula":
-                current_custom_persona = row["message"]
+                st.session_state.custom_persona_seula = row["message"]
             elif row["role"] in ["user", "assistant"]:
                 temp_chat_history.append((row["role"], row["message"]))
 
@@ -737,6 +746,9 @@ elif st.session_state.page == "chat_seula":
     current_items = ", ".join(st.session_state.inventory_seula) if st.session_state.inventory_seula else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory_seula if st.session_state.core_memory_seula else "아직 특별한 기록이 없음."
     affection_score = st.session_state.affection_seula
+    
+    # 👉 렌더링 시 세션에서 안전하게 꺼내 쓰기
+    current_custom_persona = st.session_state.get("custom_persona_seula", DEFAULT_SEULA_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [맹목적 집착 모드]. 겉으로는 애교를 부리지만 소유욕이 극에 달했어. 다른 사람을 만나는 것 같으면 눈빛이 변하며 아주 차갑고 의미심장하게 경고해."
@@ -1027,8 +1039,8 @@ elif st.session_state.page == "chat_minguk":
         st.session_state.core_memory_minguk = "" 
         st.session_state.affection_minguk = 0 
         
-        # 유저 커스텀 성격 변수 (DB에서 못 찾으면 디폴트 할당)
-        current_custom_persona = DEFAULT_MINGUK_PERSONA 
+        # 👉 세션 스테이트에 성격 정보 초기화 (에러 해결 핵심!)
+        st.session_state.custom_persona_minguk = DEFAULT_MINGUK_PERSONA 
         
         for row in db_history:
             if row["role"] == "inventory":
@@ -1038,7 +1050,7 @@ elif st.session_state.page == "chat_minguk":
             elif row["role"] == "affection": 
                 st.session_state.affection_minguk = int(row["message"])
             elif row["role"] == "persona_minguk":
-                current_custom_persona = row["message"]
+                st.session_state.custom_persona_minguk = row["message"]
             elif row["role"] in ["user", "assistant"]:
                 temp_chat_history.append((row["role"], row["message"]))
 
@@ -1053,6 +1065,9 @@ elif st.session_state.page == "chat_minguk":
     current_items = ", ".join(st.session_state.inventory_minguk) if st.session_state.inventory_minguk else "아직 받은 선물 없음"
     current_memory = st.session_state.core_memory_minguk if st.session_state.core_memory_minguk else "아직 특별한 기록이 없음."
     affection_score = st.session_state.affection_minguk
+    
+    # 👉 렌더링 시 세션에서 안전하게 꺼내 쓰기
+    current_custom_persona = st.session_state.get("custom_persona_minguk", DEFAULT_MINGUK_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [해바라기/헌신적 모드]. '널 위해서라면 내 모든 걸 줄게.' 평소 틱틱대던 모습은 완전히 사라지고, 아주 달달한 일편단심 연인 모드로 변해. 다른 남자를 만나면 심하게 질투해."
