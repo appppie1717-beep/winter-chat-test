@@ -255,15 +255,8 @@ elif st.session_state.page == "lobby":
                 if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
                     st.session_state.page = "chat_winter"
                     st.rerun()
-                # ⚙️ 겨울 성격 개조
-                with st.popover("⚙️ 성격개조", use_container_width=True):
-                    st.markdown("**❄️ 한겨울 성격 커스텀**")
-                    new_w_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=winter_persona_db, height=150, key="ta_winter")
-                    if st.button("💾 저장하기", key="save_w_persona"):
-                        supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "persona_winter").execute()
-                        supabase.table("chat_memory").insert({"user_name": user_name, "role": "persona_winter", "message": new_w_persona}).execute()
-                        st.session_state.custom_persona_winter = new_w_persona # 세션 즉시 동기화
-                        st.toast("겨울이의 성격이 업데이트 되었습니다!", icon="✨")
+                # ⚙️ 겨울 성격 개조 (원작자 아윤님 요청으로 잠금 처리 완벽 적용!)
+                st.button("🔒 성격개조 (본인 요청으로 잠금)", disabled=True, use_container_width=True, key="lock_winter")
             else:
                 if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
                     supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
@@ -297,11 +290,14 @@ elif st.session_state.page == "lobby":
                 if st.button("대화하기 💬", key="btn_seula", use_container_width=True):
                     st.session_state.page = "chat_seula"
                     st.rerun()
-                # ⚙️ 슬아 성격 개조
+                # ⚙️ 슬아 성격 개조 (st.form 적용으로 자동 새로고침 버그 완벽 차단)
                 with st.popover("⚙️ 성격개조", use_container_width=True):
                     st.markdown("**🌸 임슬아 성격 커스텀**")
-                    new_s_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=seula_persona_db, height=150, key="ta_seula")
-                    if st.button("💾 저장하기", key="save_s_persona"):
+                    with st.form(key="form_seula"):
+                        new_s_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=seula_persona_db, height=150)
+                        submit_s = st.form_submit_button("💾 저장하기")
+                        
+                    if submit_s:
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_seula).eq("role", "persona_seula").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name_seula, "role": "persona_seula", "message": new_s_persona}).execute()
                         st.session_state.custom_persona_seula = new_s_persona # 세션 즉시 동기화
@@ -339,11 +335,14 @@ elif st.session_state.page == "lobby":
                 if st.button("대화하기 💬", key="btn_minguk", use_container_width=True):
                     st.session_state.page = "chat_minguk"
                     st.rerun()
-                # ⚙️ 민국 성격 개조
+                # ⚙️ 민국 성격 개조 (st.form 적용으로 자동 새로고침 버그 완벽 차단)
                 with st.popover("⚙️ 성격개조", use_container_width=True):
                     st.markdown("**👦 김민국 성격 커스텀**")
-                    new_m_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=minguk_persona_db, height=150, key="ta_minguk")
-                    if st.button("💾 저장하기", key="save_m_persona"):
+                    with st.form(key="form_minguk"):
+                        new_m_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=minguk_persona_db, height=150)
+                        submit_m = st.form_submit_button("💾 저장하기")
+                        
+                    if submit_m:
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name_minguk).eq("role", "persona_minguk").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name_minguk, "role": "persona_minguk", "message": new_m_persona}).execute()
                         st.session_state.custom_persona_minguk = new_m_persona # 세션 즉시 동기화
@@ -362,14 +361,15 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
+            **[ v4.4.2 Beta ] 2026.04.02 (목)**
+            * **[20:15] 🚨 성격개조 팝업 자동 닫힘 버그 해결:** 스트림릿의 포커스 아웃 새로고침 현상을 방어하기 위해 `st.form` 시스템을 도입하여 UI 사용성을 대폭 개선했습니다.
+            * **[20:15] 🔒 한겨울 캐릭터 설정 보호:** 원작자(아윤)님의 간곡한(?) 요청에 따라 한겨울의 본질적 성격 개조 기능은 영구적으로 비활성화(잠금) 되었습니다. 원작의 맛을 그대로 즐겨주세요!
+            
             **[ v4.4.1 Beta ] 2026.04.02 (목)**
             * **[19:40] 🚨 긴급 버그 픽스 (NameError 해결):** 유저 샌드박스에서 성격을 조작한 후 채팅 시 발생하던 치명적인 렌더링 에러를 수정했습니다. 이제 세션 스테이트(Session State) 기반으로 완벽하게 동기화됩니다!
             
             **[ v4.4.0 Beta ] 2026.04.02 (목)**
             * **[19:30] 🧬 유저 샌드박스: 페르소나 성격 개조 기능 추가:** 로비에서 각 AI의 성격을 직접 조작하고 저장할 수 있는 기능이 추가되었습니다. JSON 핵심 룰과 호감도 시스템은 보존되며 순수 성격만 튜닝할 수 있습니다.
-            
-            **[ v4.3.1 Beta ] 2026.04.01 (수)**
-            * **[23:00] 👦 김민국 버그 픽스 (동성 질투 오류 해결):** 유저(파이)가 다른 동성(여자) 친구인 겨울이나 슬아와 통화하거나 친하게 지낼 때, 민국이가 뜬금없이 이성적인 질투를 하며 호감도를 깎던 현상을 완전히 수정했습니다. 이제 민국이는 여사친들과의 우정을 응원하며, 오직 '다른 남자'의 등장에만 민감하게 삐지도록 설계되었습니다.
             """)
 
 # =====================================================================
