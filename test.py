@@ -255,7 +255,7 @@ elif st.session_state.page == "lobby":
                 if st.button("대화하기 💬", key="btn_winter", use_container_width=True):
                     st.session_state.page = "chat_winter"
                     st.rerun()
-                # ⚙️ 겨울 성격 개조 (원작자 아윤님 요청으로 잠금 처리 완벽 적용!)
+                # ⚙️ 겨울 성격 개조
                 st.button("🔒 성격개조 ", disabled=True, use_container_width=True, key="lock_winter")
             else:
                 if st.button("🙇‍♂️ 싹싹 빌기", key="unban_winter", use_container_width=True):
