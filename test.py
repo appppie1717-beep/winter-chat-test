@@ -94,20 +94,20 @@ st.markdown(theme_css + """
     """, unsafe_allow_html=True)
 
 scene_images = {
-    "기본": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true)",
-    "침대_유혹": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true)",
-    "아련_문": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%AC%B8%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%AC%B8%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true)",
-    "아련_벽": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%B2%BㅁD%EC%9D%84%20%EB%93%B1%EC%A7%80%EA%B3%A0%20%EC%84%9C%EC%84%9C%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%A0%95%EB%A9%B4%EC%9D%84%20%EC%A3%BC%EC%8B%9C%ED%95%9C%EB%8B%A4(%EC%B8%A1%EB%A9%B4).png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%B2%BㅁD%EC%9D%84%20%EB%93%B1%EC%A7%80%EA%B3%A0%20%EC%84%9C%EC%84%9C%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%A0%95%EB%A9%B4%EC%9D%84%20%EC%A3%BC%EC%8B%9C%ED%95%9C%EB%8B%A4(%EC%B8%A1%EB%A9%B4).png?raw=true)",
-    "힘듦": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%20%EB%B2%BD%EC%9D%84%20%ED%9E%98%EB%93%A0%EB%93%AF%EC%9D%B4%20%EA%B8%B0%EB%8C%84%EB%8B%A4.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%20%EB%B2%BD%EC%9D%84%20%ED%9E%98%EB%93%A0%EB%93%AF%EC%9D%B4%20%EA%B8%B0%EB%8C%84%EB%8B%A4.png?raw=true)",
-    "당황_숨가쁨": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%95%88.%20%EC%B0%BD%EB%AC%B8%EC%98%86%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.%20%EC%88%A8%EC%9D%84%20%ED%97%90%EB%96%A1%EA%B1%B0%EB%A6%BC.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%95%88.%20%EC%B0%BD%EB%AC%B8%EC%98%86%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.%20%EC%88%A8%EC%9D%84%20%ED%97%90%EB%96%A1%EA%B1%B0%EB%A6%BC.png?raw=true)",
-    "취기_웃음": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EB%B3%B4%EB%8A%94%EB%8D%B0%20%EC%B7%A8%EA%B8%B0%EA%B0%80%20%EC%9E%88%EB%8A%94%20%EC%96%BC%EA%B5%B4%EC%97%90%20%EC%9B%83%EA%B3%A0%EC%9E%88%EC%9D%8C.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EB%B3%B4%EB%8A%94%EB%8D%B0%20%EC%B7%A8%EA%B8%B0%EA%B0%80%20%EC%9E%88%EB%8A%94%20%EC%96%BC%EA%B5%B4%EC%97%90%20%EC%9B%83%EA%B3%A0%EC%9E%88%EC%9D%8C.png?raw=true)",
-    "슬픔_훌쩍": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%9B%8C%EC%A9%8D%EA%B1%B0%EB%A6%BC.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%9B%8C%EC%A9%8D%EA%B1%B0%EB%A6%BC.png?raw=true)",
-    "침대_누움": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EB%88%84%EC%9B%80(%EC%95%BC%ED%95%9C%EA%B0%81%EB%8F%84).png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EB%88%84%EC%9B%80(%EC%95%BC%ED%95%9C%EA%B0%81%EB%8F%84).png?raw=true)",
-    "침대_앉음": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EC%95%89%EC%95%84%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EC%95%89%EC%95%84%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true)",
-    "침대_요염": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%9A%94%EC%97%BC%ED%95%9C%20%EC%9E%90%EC%84%B8%EB%A5%BC%20%EC%B7%A8%ED%95%98%EB%A9%B4%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%9A%94%EC%97%BC%ED%95%9C%20%EC%9E%90%EC%84%B8%EB%A5%BC%20%EC%B7%A8%ED%95%98%EB%A9%B4%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true)",
-    "침대_내려다봄": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%82%B4%EB%A0%A4%EB%8B%A4%EB%B4%84.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%82%B4%EB%A0%A4%EB%8B%A4%EB%B4%84.png?raw=true)",
-    "포옹_허리": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EC%9D%98%20%ED%97%88%EB%A6%AC%EB%A5%BC%20%EA%BB%B4%EC%95%88%EC%9D%8C(%EC%95%84%EB%9E%AB%EB%8F%84%EB%A6%AC).png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EC%9D%98%20%ED%97%88%EB%A6%AC%EB%A5%BC%20%EA%BB%B4%EC%95%88%EC%9D%8C(%EC%95%84%EB%9E%AB%EB%8F%84%EB%A6%AC).png?raw=true)",
-    "키스": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true)"
+    "기본": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png?raw=true",
+    "침대_유혹": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png?raw=true",
+    "아련_문": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%AC%B8%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
+    "아련_벽": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%83%88%EB%B2%BD%EC%97%90%20%EB%B2%BㅁD%EC%9D%84%20%EB%93%B1%EC%A7%80%EA%B3%A0%20%EC%84%9C%EC%84%9C%20%EC%95%84%EB%A0%A8%ED%95%98%EA%B2%8C%20%EC%A0%95%EB%A9%B4%EC%9D%84%20%EC%A3%BC%EC%8B%9C%ED%95%9C%EB%8B%A4(%EC%B8%A1%EB%A9%B4).png?raw=true",
+    "힘듦": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%20%EB%B2%BD%EC%9D%84%20%ED%9E%98%EB%93%A0%EB%93%AF%EC%9D%B4%20%EA%B8%B0%EB%8C%84%EB%8B%A4.png?raw=true",
+    "당황_숨가쁨": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%95%88.%20%EC%B0%BD%EB%AC%B8%EC%98%86%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.%20%EC%88%A8%EC%9D%84%20%ED%97%90%EB%96%A1%EA%B1%B0%EB%A6%BC.png?raw=true",
+    "취기_웃음": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EB%B3%B4%EB%8A%94%EB%8D%B0%20%EC%B7%A8%EA%B8%B0%EA%B0%80%20%EC%9E%88%EB%8A%94%20%EC%96%BC%EA%B5%B4%EC%97%90%20%EC%9B%83%EA%B3%A0%EC%9E%88%EC%9D%8C.png?raw=true",
+    "슬픔_훌쩍": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%9B%8C%EC%A9%8D%EA%B1%B0%EB%A6%BC.png?raw=true",
+    "침대_누움": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EB%88%84%EC%9B%80(%EC%95%BC%ED%95%9C%EA%B0%81%EB%8F%84).png?raw=true",
+    "침대_앉음": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%20%EC%95%89%EC%95%84%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
+    "침대_요염": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%EC%9A%94%EC%97%BC%ED%95%9C%20%EC%9E%90%EC%84%B8%EB%A5%BC%20%EC%B7%A8%ED%95%98%EB%A9%B4%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%B3%90%EB%8B%A4%EB%B4%84.png?raw=true",
+    "침대_내려다봄": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%82%B4%EB%A0%A4%EB%8B%A4%EB%B4%84.png?raw=true",
+    "포옹_허리": "https://github.com/appppie1717-beep/winter-chat/blob/main/%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EC%9D%98%20%ED%97%88%EB%A6%AC%EB%A5%BC%20%EA%BB%B4%EC%95%88%EC%9D%8C(%EC%95%84%EB%9E%AB%EB%8F%84%EB%A6%AC).png?raw=true",
+    "키스": "https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true"
 }
 
 api_key = st.secrets["GOOGLE_API_KEY"]
@@ -122,7 +122,7 @@ if "page" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
-# 📌 디폴트 페르소나 설정 (유저가 안 건드렸을 때 100% 기존과 동일하게 작동하도록 보장)
+# 📌 디폴트 페르소나 설정
 DEFAULT_WINTER_PERSONA = """[본질적 성격 - '아윤' 모티브 100% 빙의]
 1. 너는 주변에서 #강아지상 #귀여운호구 #마음은_여리지만_티안내려고_틱틱대는애 로 불려.
 2. 평소엔 꽤 나긋나긋하고 텐션이 좋은 편이야."""
@@ -360,14 +360,8 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v4.5.1 Beta ] 2026.04.02 (목)**
-            * **[23:51] 🔥 갠톡방 동적 초대 및 5초 리얼타임 단톡방 업데이트:** 어떤 조합이든 초대 가능하며, 입력 씹힘 버그가 해결되었습니다.
-            
-            **[ v4.5.0 Beta ] 2026.04.02 (목)**
-            * **[22:08] 🔥 실시간 AI 단톡방(겨울&민국) 오픈:** 10초 주기로 AI들이 알아서 대화하는 멀티버스 생태계가 최초로 도입되었습니다!
-            
-            **[ v4.4.2 Beta ] 2026.04.02 (목)**
-            * **[20:15] 🚨 성격개조 팝업 자동 닫힘 버그 해결**
+            **[ v4.6.0 Beta ] 2026.04.03 (금)**
+            * **[00:23] 🔥 완전체 진화:** JSON 치트키 추출 로직 도입으로 이미지 깨짐 해결. AI 독식 금지 룰 & 유저 난입 1순위 반응 시스템으로 멀티방 완벽 최적화 (8초 갱신).
             """)
 
 # =====================================================================
@@ -387,7 +381,6 @@ elif st.session_state.page == "chat_winter":
         st.session_state.inventory = [] 
         st.session_state.core_memory = "" 
         st.session_state.affection = 0 
-        
         st.session_state.custom_persona_winter = DEFAULT_WINTER_PERSONA
 
         for row in db_history:
@@ -438,7 +431,7 @@ elif st.session_state.page == "chat_winter":
     [🔥 핵심 상황별 고정 리액션 & 💔 호감도 깐깐한 채점 기준]
     AI의 '착한 본성'을 버리고, 유저가 얄밉게 굴면 가차 없이 마이너스(-) 점수를 줘!
     - 💢 가벼운 장난, 깐족거림, 대충 대답하기: "아 뭐래 진짜~" 하며 틱틱대고 (호감도 -1 ~ -3)
-    - 💢 딴 여자(슬아) 칭찬: 호감도 50 이하일 땐 "어쩌라고?" 무시. 50 이상일 땐 질투. (호감도 -5 ~ -10)
+    - 💢 딴 여자(슬아) 칭찬: 호감도 50 이하일 땐 무시. 50 이상일 땐 질투. (호감도 -5 ~ -10)
     - 🚨 징징대거나 과하게 의존: "한심한 짓 그만해." 팩트 폭행 (호감도 -10 ~ -15)
     - 🚨 19금, 성희롱, 선 넘는 장난: "쳐 돌았어?" 극대노 (호감도 -20 ~ -50 즉시 삭감)
     - 🎁 선물 받았을 때: 놀라서 거절하는 척하다가 챙겨 받음 (호감도 +2 ~ +5)
@@ -466,11 +459,16 @@ elif st.session_state.page == "chat_winter":
                 st.markdown(text)
         else:
             try:
-                clean_text = text.strip()
-                if clean_text.startswith("```json"): clean_text = clean_text[7:]
-                if clean_text.endswith("```"): clean_text = clean_text[:-3]
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+                raw_json_text = text.strip()
+                start_idx = raw_json_text.find('{')
+                end_idx = raw_json_text.rfind('}') + 1
+                if start_idx != -1 and end_idx != -1:
+                    clean_json_text = raw_json_text[start_idx:end_idx]
+                else:
+                    clean_json_text = raw_json_text
                 
-                data = json.loads(clean_text.strip())
+                data = json.loads(clean_json_text.strip())
                 scene = data.get('장면', '기본')
                 img_path = scene_images.get(scene, scene_images["기본"])
                 
@@ -591,9 +589,13 @@ elif st.session_state.page == "chat_winter":
             st.stop()
         
         try:
-            clean_json_text = raw_json_text.strip()
-            if clean_json_text.startswith("```json"): clean_json_text = clean_json_text[7:]
-            if clean_json_text.endswith("```"): clean_json_text = clean_json_text[:-3]
+            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+            start_idx = raw_json_text.find('{')
+            end_idx = raw_json_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != -1:
+                clean_json_text = raw_json_text[start_idx:end_idx]
+            else:
+                clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
             scene = parsed_data.get('장면', '기본')
@@ -775,11 +777,16 @@ elif st.session_state.page == "chat_seula":
                 st.markdown(text)
         else:
             try:
-                clean_text = text.strip()
-                if clean_text.startswith("```json"): clean_text = clean_text[7:]
-                if clean_text.endswith("```"): clean_text = clean_text[:-3]
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+                raw_json_text = text.strip()
+                start_idx = raw_json_text.find('{')
+                end_idx = raw_json_text.rfind('}') + 1
+                if start_idx != -1 and end_idx != -1:
+                    clean_json_text = raw_json_text[start_idx:end_idx]
+                else:
+                    clean_json_text = raw_json_text
                 
-                data = json.loads(clean_text.strip())
+                data = json.loads(clean_json_text.strip())
                 
                 with st.chat_message("assistant", avatar="🌸"):
                     score = int(data.get('호감도변화', 0))
@@ -864,9 +871,13 @@ elif st.session_state.page == "chat_seula":
             st.stop()
         
         try:
-            clean_json_text = raw_json_text.strip()
-            if clean_json_text.startswith("```json"): clean_json_text = clean_json_text[7:]
-            if clean_json_text.endswith("```"): clean_json_text = clean_json_text[:-3]
+            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+            start_idx = raw_json_text.find('{')
+            end_idx = raw_json_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != -1:
+                clean_json_text = raw_json_text[start_idx:end_idx]
+            else:
+                clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
             turn_score = int(parsed_data.get('호감도변화', 0))
@@ -1001,10 +1012,16 @@ elif st.session_state.page == "chat_minguk":
                 st.markdown(text)
         else:
             try:
-                clean_text = text.strip()
-                if clean_text.startswith("```json"): clean_text = clean_text[7:]
-                if clean_text.endswith("```"): clean_text = clean_text[:-3]
-                data = json.loads(clean_text.strip())
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+                raw_json_text = text.strip()
+                start_idx = raw_json_text.find('{')
+                end_idx = raw_json_text.rfind('}') + 1
+                if start_idx != -1 and end_idx != -1:
+                    clean_json_text = raw_json_text[start_idx:end_idx]
+                else:
+                    clean_json_text = raw_json_text
+                
+                data = json.loads(clean_json_text.strip())
                 
                 with st.chat_message("assistant", avatar="👦"):
                     score = int(data.get('호감도변화', 0))
@@ -1089,9 +1106,13 @@ elif st.session_state.page == "chat_minguk":
             st.stop()
         
         try:
-            clean_json_text = raw_json_text.strip()
-            if clean_json_text.startswith("```json"): clean_json_text = clean_json_text[7:]
-            if clean_json_text.endswith("```"): clean_json_text = clean_json_text[:-3]
+            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+            start_idx = raw_json_text.find('{')
+            end_idx = raw_json_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != -1:
+                clean_json_text = raw_json_text[start_idx:end_idx]
+            else:
+                clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
             turn_score = int(parsed_data.get('호감도변화', 0))
@@ -1146,8 +1167,8 @@ elif st.session_state.page == "chat_multi":
     room_id = "_".join(members)
     db_room_name = f"{user_name}_{room_id}_multi"
 
-    # 5초마다 자동 새로고침 (인간적인 속도감)
-    st_autorefresh(interval=5000, key="multi_room_refresh")
+    # 🔥 8초마다 자동 새로고침 (유저 채팅 시간 충분히 확보)
+    st_autorefresh(interval=8000, key="multi_room_refresh")
 
     col1, col2 = st.columns([8, 2])
     with col1:
@@ -1185,11 +1206,14 @@ elif st.session_state.page == "chat_multi":
     current_time = time.time()
     time_diff = current_time - st.session_state.last_msg_time
 
-    if time_diff > 4.0:
+    if time_diff > 6.0:
         member_info = ""
         if "winter" in members: member_info += "[한겨울]: 까칠한 츤데레 여사친.\n"
         if "seula" in members: member_info += "[임슬아]: 여우 같은 연하녀, 벚꽃🌸 사용.\n"
         if "minguk" in members: member_info += "[김민국]: 능글맞은 남사친, 장난꾸러기.\n"
+
+        # 방금 마지막으로 말한 사람 (연속 말하기 방지용)
+        last_speaker = response.data[0]["role"] if response.data else "none"
 
         director_persona = f"""
         너는 '{room_title}' 단톡방의 흐름을 조율하는 감독관이야.
@@ -1197,9 +1221,10 @@ elif st.session_state.page == "chat_multi":
         최근 대화:
         {history_text_for_ai}
 
-        지금 이 정적 속에서 대화를 이어갈 캐릭터 한 명을 골라 대사를 생성해.
-        두 캐릭터가 서로 질투하거나, 유저를 놀리거나, 자기들끼리 싸우게 만들어.
-        할 말 없으면 PASS라고 해.
+        [절대 규칙]
+        1. 방금 마지막으로 말한 사람(현재 '{last_speaker}')이 연속으로 두 번 대답하게 하지 마! 반드시 다른 캐릭터가 말을 이어가게 해.
+        2. 만약 최근 대화의 마지막 메시지가 유저('{user_name}')의 채팅이라면, 하던 대화를 멈추고 무조건 유저의 말에 최우선으로 반응해.
+        3. 할 말 없으면 PASS라고 해.
 
         응답 형식(JSON):
         {{
@@ -1213,11 +1238,16 @@ elif st.session_state.page == "chat_multi":
                 contents=director_persona,
                 config={"response_mime_type": "application/json"}
             )
-            clean_json = res.text.strip()
-            if clean_json.startswith("```json"): clean_json = clean_json[7:]
-            if clean_json.endswith("```"): clean_json = clean_json[:-3]
+            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+            raw_json_text = res.text.strip()
+            start_idx = raw_json_text.find('{')
+            end_idx = raw_json_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != -1:
+                clean_json_text = raw_json_text[start_idx:end_idx]
+            else:
+                clean_json_text = raw_json_text
             
-            parsed = json.loads(clean_json.strip())
+            parsed = json.loads(clean_json_text.strip())
             if parsed.get("speaker") in members and parsed.get("message"):
                 supabase.table("chat_memory").insert({"user_name": db_room_name, "role": parsed["speaker"], "message": parsed["message"]}).execute()
                 st.session_state.last_msg_time = time.time()
