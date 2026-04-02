@@ -1359,11 +1359,11 @@ elif st.session_state.page == "chat_minguk":
 # 🌐 7. 겨울 & 민국 멀티 채팅방 (실시간 단톡방)
 # =====================================================================
 elif st.session_state.page == "chat_multi":
-user_name = st.session_state.user_name
-db_room_name = f"{user_name}_multi_room" # 단톡방 전용 DB 키
+	user_name = st.session_state.user_name
+	db_room_name = f"{user_name}_multi_room" # 단톡방 전용 DB 키
 
-# 1. 페이지 진입 시에만 10초(10000ms) 자동 새로고침 작동
-st_autorefresh(interval=10000, key="multi_room_refresh")
+	# 1. 페이지 진입 시에만 10초(10000ms) 자동 새로고침 작동
+	st_autorefresh(interval=10000, key="multi_room_refresh")
 
 # 상단 UI 및 뒤로가기 버튼
 col1, col2 = st.columns([8, 2])
