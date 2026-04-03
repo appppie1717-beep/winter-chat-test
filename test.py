@@ -704,7 +704,7 @@ elif st.session_state.page == "chat_seula":
         st.session_state.turn_count_seula = 0
 
     if "chat_history_seula" not in st.session_state or "inventory_seula" not in st.session_state or "affection_seula" not in st.session_state:
-        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(100).execute()
+        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
         db_history = reversed(response.data)
 
         temp_chat_history = []
@@ -988,7 +988,7 @@ elif st.session_state.page == "chat_minguk":
         st.session_state.turn_count_minguk = 0
 
     if "chat_history_minguk" not in st.session_state or "inventory_minguk" not in st.session_state or "affection_minguk" not in st.session_state:
-        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(100).execute()
+        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
         db_history = reversed(response.data)
 
         temp_chat_history = []
@@ -1284,7 +1284,7 @@ elif st.session_state.page == "chat_multi":
         st.session_state.last_msg_time = time.time()
         st.session_state.multi_turn_count = 0
     
-    response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(100).execute()
+    response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(800).execute()
     db_history = list(reversed(response.data))
 
     # 멀티방 기억 변수 불러오기
