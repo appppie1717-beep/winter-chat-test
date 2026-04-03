@@ -845,11 +845,39 @@ elif st.session_state.page == "chat_seula":
                     if st.button(theme_label, key="theme_seula", use_container_width=True):
                         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
                         st.rerun()
+                
                 st.divider()
                 st.subheader("💖 현재 호감도")
                 progress_val = max(0, min(affection_score, 100)) 
                 st.write(f"**슬아와의 점수: {affection_score} / 100**")
                 st.progress(progress_val / 100.0)
+                
+                # 🎒 🧠 슬아 방에 인벤토리/기억저장 부활!
+                st.divider()
+                col_inv, col_mem = st.columns(2)
+                with col_inv:
+                    st.subheader("🎒 보관함")
+                    if st.session_state.inventory_seula:
+                        for item in st.session_state.inventory_seula:
+                            st.success(f"🎁 {item}")
+                    else:
+                        st.info("비어있음")
+                with col_mem:
+                    st.subheader("🧠 기록저장")
+                    st.info(core_belief if core_belief else "기록 없음")
+                
+                st.divider()
+                st.subheader("🗑️ 기록 리셋")
+                delete_confirm = st.checkbox("🚨 슬아와의 기록을 삭제하시겠습니까?")
+                if delete_confirm:
+                    if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_seula", None)
+                        st.session_state.pop("inventory_seula", None)
+                        st.session_state.pop("mid_summaries_seula", None)
+                        st.session_state.pop("core_belief_seula", None)
+                        st.session_state.pop("affection_seula", None)
+                        st.rerun()
 
     if user_input := st.chat_input("슬아에게 메시지 보내기"):
         st.toast('슬아가 당신을 지켜보며 답장을 고민 중입니다...', icon='🌸')
@@ -904,6 +932,7 @@ elif st.session_state.page == "chat_seula":
             if item_get and item_get != "없음":
                 st.session_state.inventory_seula.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": item_get}).execute()
+                st.toast(f'🎉 슬아가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
             item_use = parsed_data.get('사용아이템', '없음')
             if item_use and item_use != "없음" and item_use in st.session_state.inventory_seula:
@@ -911,6 +940,7 @@ elif st.session_state.page == "chat_seula":
                 supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 for inv_item in st.session_state.inventory_seula:
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": inv_item}).execute()
+                st.toast(f'✨ 슬아가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
             with st.chat_message("assistant", avatar="🌸"):
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
@@ -1096,11 +1126,39 @@ elif st.session_state.page == "chat_minguk":
                     if st.button(theme_label, key="theme_minguk", use_container_width=True):
                         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
                         st.rerun()
+                
                 st.divider()
                 st.subheader("💖 현재 호감도")
                 progress_val = max(0, min(affection_score, 100)) 
                 st.write(f"**민국이와의 점수: {affection_score} / 100**")
                 st.progress(progress_val / 100.0)
+
+                # 🎒 🧠 민국이 방에 인벤토리/기억저장 부활!
+                st.divider()
+                col_inv, col_mem = st.columns(2)
+                with col_inv:
+                    st.subheader("🎒 보관함")
+                    if st.session_state.inventory_minguk:
+                        for item in st.session_state.inventory_minguk:
+                            st.success(f"🎁 {item}")
+                    else:
+                        st.info("비어있음")
+                with col_mem:
+                    st.subheader("🧠 기록저장")
+                    st.info(core_belief if core_belief else "기록 없음")
+                
+                st.divider()
+                st.subheader("🗑️ 기록 리셋")
+                delete_confirm = st.checkbox("🚨 민국이와의 기록을 삭제하시겠습니까?")
+                if delete_confirm:
+                    if st.button("✅ 영구 삭제 실행", use_container_width=True):
+                        supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_minguk", None)
+                        st.session_state.pop("inventory_minguk", None)
+                        st.session_state.pop("mid_summaries_minguk", None)
+                        st.session_state.pop("core_belief_minguk", None)
+                        st.session_state.pop("affection_minguk", None)
+                        st.rerun()
 
     if user_input := st.chat_input("민국이에게 메시지 보내기"):
         st.toast('민국이가 당신의 말을 듣고 피식 웃습니다...', icon='👦')
@@ -1155,6 +1213,7 @@ elif st.session_state.page == "chat_minguk":
             if item_get and item_get != "없음":
                 st.session_state.inventory_minguk.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": item_get}).execute()
+                st.toast(f'🎉 민국이가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
             item_use = parsed_data.get('사용아이템', '없음')
             if item_use and item_use != "없음" and item_use in st.session_state.inventory_minguk:
@@ -1162,6 +1221,7 @@ elif st.session_state.page == "chat_minguk":
                 supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 for inv_item in st.session_state.inventory_minguk:
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": inv_item}).execute()
+                st.toast(f'✨ 민국이가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
             with st.chat_message("assistant", avatar="👦"):
                 heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
