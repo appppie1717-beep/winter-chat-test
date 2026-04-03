@@ -383,7 +383,7 @@ elif st.session_state.page == "chat_winter":
         st.session_state.turn_count = 0
 
     if "chat_history" not in st.session_state or "inventory" not in st.session_state or "affection" not in st.session_state:
-        response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(100).execute()
+        response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(800).execute()
         db_history = reversed(response.data)
 
         temp_chat_history = []
