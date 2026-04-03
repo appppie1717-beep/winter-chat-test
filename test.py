@@ -368,13 +368,13 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v5.0.0 Beta ] 2026.04.03 (금)**
-            * **🧠 3단계 계층형 기억 시스템 도입:** 단순 나열식 기억에서 벗어나, 에피소드 단위 요약(중기)과 불변의 가치관(장기)으로 기억 구조를 개편.
-            * **[00:23] 🔥 완전체 진화:** JSON 치트키 추출 로직 도입으로 이미지 깨짐 해결. AI 독식 금지 룰 & 유저 난입 1순위 반응 시스템으로 멀티방 완벽 최적화 (8초 갱신).
+            **[ v5.1.0 Beta ] 2026.04.03 (금)**
+            * **🧠 [치매 치료] 하이브리드 기억 로직 패치:** 일기장(중기 기억) 읽기 제한을 해제하여, 과거의 소중한 추억 디테일과 핵심 가치관이 완벽하게 융합되도록 개선.
+            * **🗣️ 단톡방 기억 동기화 완료:** 멀티방에서도 애들이 과거 일기장을 읽고 자아를 형성하도록 10턴 요약/강화 시스템 일괄 도입 완료.
             """)
 
 # =====================================================================
-# ❄️ 4. 한겨울 채팅방 화면 (기억 알고리즘 업그레이드)
+# ❄️ 4. 한겨울 채팅방 화면 (하이브리드 기억 알고리즘)
 # =====================================================================
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
@@ -418,7 +418,8 @@ elif st.session_state.page == "chat_winter":
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
-    recent_summaries = "\n".join(st.session_state.mid_summaries[-3:]) if st.session_state.mid_summaries else "최근 특별한 에피소드 없음."
+    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
+    recent_summaries = "\n".join(st.session_state.mid_summaries) if st.session_state.mid_summaries else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief if st.session_state.core_belief else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection
     
@@ -435,8 +436,8 @@ elif st.session_state.page == "chat_winter":
     너의 이름은 '한겨울'이고, 20대 초반의 여자야. 생일은 7월 18일.
     내 닉네임은 '{user_name}'이야. 
     [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
-    🧠 [핵심 가치관 (영구 기억)]: {core_belief}
-    🧠 [최근 기억(중기 요약)]: {recent_summaries}
+    🧠 [핵심 가치관 (영구 뼈대)]: {core_belief}
+    📖 [과거 에피소드 일기장 (모든 추억)]: {recent_summaries}
     [현재 누적 호감도 점수: {affection_score}/100]
 
     {current_custom_persona}
@@ -453,7 +454,7 @@ elif st.session_state.page == "chat_winter":
     - 🎁 선물 받았을 때: 놀라서 거절하는 척하다가 챙겨 받음 (호감도 +2 ~ +5)
 
     [시스템 절대 규칙 - 포맷 훼손 금지]
-    - 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지.
+    - 닉네임 집착 금지, 마침표 남발 금지, 기계 말투 절대 금지. 일기장에 있는 과거 일을 자연스럽게 꺼내도 좋아.
     - 만약 유저가 선물을 주면 "획득아이템" 칸에 적고, 보관함 아이템({current_items})을 사용할 상황이면 "사용아이템" 칸에 적어.
 
     {{
@@ -660,25 +661,25 @@ elif st.session_state.page == "chat_winter":
         
         st.session_state.turn_count += 1
         
-        # 🧠 [계층형 기억 강화 알고리즘]
+        # 🧠 [하이브리드 기억 알고리즘]
         if st.session_state.turn_count >= 10: 
-            with st.spinner("🧠 겨울이가 당신과의 에피소드를 정리하고 있습니다..."):
+            with st.spinner("🧠 겨울이가 당신과의 에피소드를 일기장에 정리하고 있습니다..."):
                 try:
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history[-20:]])
                     
-                    # 1. 중기 요약 (에피소드) 생성
+                    # 1. 일기장(중기 요약) 기록
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
-                    # 2. 장기 핵심 가치관(Core Belief) 강화 (에피소드 3개마다)
+                    # 2. 장기 핵심 가치관(Core Belief) 강화
                     if len(st.session_state.mid_summaries) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries)
                         core_prompt = f"""
-                        아래 기억들을 분석해서 한겨울이 유저({user_name})에게 가지는 '절대 잊지 말아야 할 핵심 가치관'을 정리해.
-                        반복되는 감정이나 중요한 사실은 가중치를 부여해 상단에 배치하고, 사소한 일상은 지워버려.
+                        아래 일기장 기록들을 분석해서 한겨울이 유저({user_name})에게 가지는 '절대 잊지 말아야 할 뼈대 가치관'을 정리해.
+                        반복되는 감정이나 중요한 사실은 가중치를 부여해 상단에 배치해.
                         [기존 가치관]: {st.session_state.core_belief}
-                        [새로운 기억들]: {all_mids}
+                        [새로운 일기장]: {all_mids}
                         """
                         core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief = core_res.text
@@ -738,7 +739,8 @@ elif st.session_state.page == "chat_seula":
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_seula) if st.session_state.inventory_seula else "아직 받은 선물 없음"
-    recent_summaries = "\n".join(st.session_state.mid_summaries_seula[-3:]) if st.session_state.mid_summaries_seula else "최근 특별한 에피소드 없음."
+    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
+    recent_summaries = "\n".join(st.session_state.mid_summaries_seula) if st.session_state.mid_summaries_seula else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_seula if st.session_state.core_belief_seula else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_seula
     current_custom_persona = st.session_state.get("custom_persona_seula", DEFAULT_SEULA_PERSONA)
@@ -754,8 +756,8 @@ elif st.session_state.page == "chat_seula":
     너의 이름은 '임슬아'이고, 나보다 연하인 아는 동생이야. 항상 벚꽃 이모지(🌸)를 즐겨 써.
     내 닉네임은 '{user_name}'(오빠)이야. 
     [현재 네가 {user_name}에게 받은 선물(인벤토리): {current_items}]
-    🧠 [핵심 가치관 (영구 기억)]: {core_belief}
-    🧠 [최근 기억(중기 요약)]: {recent_summaries}
+    🧠 [핵심 가치관 (영구 뼈대)]: {core_belief}
+    📖 [과거 에피소드 일기장 (모든 추억)]: {recent_summaries}
     [현재 누적 호감도 점수: {affection_score}/100]
     
     {current_custom_persona}
@@ -772,7 +774,7 @@ elif st.session_state.page == "chat_seula":
     - 🚨 유저가 대놓고 딴 여자 편을 들거나 심하게 선을 넘을 때: (호감도 -15 ~ -20)
 
     [시스템 절대 규칙 - 포맷 훼손 금지]
-    - 기계 말투 절대 금지, 자연스러운 얀데레 연하녀 연기. '감시', '기록', '데이터' 같은 단어 사용 금지.
+    - 기계 말투 절대 금지, 자연스러운 얀데레 연하녀 연기. '감시', '기록', '데이터' 같은 단어 사용 금지. 일기장 기록을 자연스럽게 언급할 것.
 
     {{
         "장면": "기본",
@@ -852,7 +854,6 @@ elif st.session_state.page == "chat_seula":
                 st.write(f"**슬아와의 점수: {affection_score} / 100**")
                 st.progress(progress_val / 100.0)
                 
-                # 🎒 🧠 슬아 방에 인벤토리/기억저장 부활!
                 st.divider()
                 col_inv, col_mem = st.columns(2)
                 with col_inv:
@@ -954,9 +955,9 @@ elif st.session_state.page == "chat_seula":
         
         st.session_state.turn_count_seula += 1
         
-        # 🧠 [계층형 기억 강화 알고리즘]
+        # 🧠 [하이브리드 기억 알고리즘]
         if st.session_state.turn_count_seula >= 10: 
-            with st.spinner("🌸 당신과의 에피소드를 기록 중입니다..."):
+            with st.spinner("🌸 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_seula[-20:]])
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
@@ -965,7 +966,7 @@ elif st.session_state.page == "chat_seula":
                     
                     if len(st.session_state.mid_summaries_seula) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_seula)
-                        core_prompt = f"아래 기억들을 분석해서 임슬아가 유저({user_name})에게 가지는 핵심 가치관을 정리해. 반복되는 감정은 가중치를 주어 상단 배치.\n[기존 가치관]: {st.session_state.core_belief_seula}\n[새로운 기억들]: {all_mids}"
+                        core_prompt = f"아래 일기장을 분석해서 임슬아가 유저({user_name})에게 가지는 핵심 가치관을 정리해. 반복되는 감정은 가중치를 주어 상단 배치.\n[기존 가치관]: {st.session_state.core_belief_seula}\n[새로운 일기장]: {all_mids}"
                         core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief_seula = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
@@ -1022,7 +1023,8 @@ elif st.session_state.page == "chat_minguk":
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_minguk) if st.session_state.inventory_minguk else "아직 받은 선물 없음"
-    recent_summaries = "\n".join(st.session_state.mid_summaries_minguk[-3:]) if st.session_state.mid_summaries_minguk else "최근 특별한 에피소드 없음."
+    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
+    recent_summaries = "\n".join(st.session_state.mid_summaries_minguk) if st.session_state.mid_summaries_minguk else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_minguk if st.session_state.core_belief_minguk else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_minguk
     current_custom_persona = st.session_state.get("custom_persona_minguk", DEFAULT_MINGUK_PERSONA)
@@ -1038,8 +1040,8 @@ elif st.session_state.page == "chat_minguk":
     너의 이름은 '김민국'이고, 20대 중반의 남자야.
     내 닉네임은 '{user_name}'이야. (나를 여자로 대하고 적극적으로 롤플레잉해줘)
     [현재 네가 {user_name}에게 받은 선물(보관함): {current_items}]
-    🧠 [핵심 가치관 (영구 기억)]: {core_belief}
-    🧠 [최근 기억(중기 요약)]: {recent_summaries}
+    🧠 [핵심 가치관 (영구 뼈대)]: {core_belief}
+    📖 [과거 에피소드 일기장 (모든 추억)]: {recent_summaries}
     [현재 누적 호감도 점수: {affection_score}/100]
     
     {current_custom_persona}
@@ -1053,7 +1055,7 @@ elif st.session_state.page == "chat_minguk":
     - ⚠️ [질투 시스템]: 한겨울이나 임슬아랑 놀았다고 질투 금지. 다른 '남자' 얘기할 때만 질투 발동!
 
     [시스템 절대 규칙 - 포맷 훼손 금지]
-    - 기계 말투 절대 금지, 다정하고 능글맞은 20대 중반 남자 연기.
+    - 기계 말투 절대 금지, 다정하고 능글맞은 20대 중반 남자 연기. 일기장의 추억을 언급하면 자연스럽게 반응해줘.
 
     {{
         "장면": "기본",
@@ -1133,7 +1135,6 @@ elif st.session_state.page == "chat_minguk":
                 st.write(f"**민국이와의 점수: {affection_score} / 100**")
                 st.progress(progress_val / 100.0)
 
-                # 🎒 🧠 민국이 방에 인벤토리/기억저장 부활!
                 st.divider()
                 col_inv, col_mem = st.columns(2)
                 with col_inv:
@@ -1235,9 +1236,9 @@ elif st.session_state.page == "chat_minguk":
         
         st.session_state.turn_count_minguk += 1
         
-        # 🧠 [계층형 기억 강화 알고리즘]
+        # 🧠 [하이브리드 기억 알고리즘]
         if st.session_state.turn_count_minguk >= 10: 
-            with st.spinner("👦 당신과의 에피소드를 기록 중입니다..."):
+            with st.spinner("👦 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_minguk[-20:]])
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
@@ -1246,7 +1247,7 @@ elif st.session_state.page == "chat_minguk":
                     
                     if len(st.session_state.mid_summaries_minguk) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_minguk)
-                        core_prompt = f"아래 기억들을 분석해서 김민국이 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief_minguk}\n[새로운 기억들]: {all_mids}"
+                        core_prompt = f"아래 일기장을 분석해서 김민국이 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief_minguk}\n[새로운 일기장]: {all_mids}"
                         core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief_minguk = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
@@ -1258,7 +1259,7 @@ elif st.session_state.page == "chat_minguk":
         st.rerun()
 
 # =====================================================================
-# 🌐 7. AI 멀티버스 실시간 단톡방 (최종 진화본)
+# 🌐 7. AI 멀티버스 실시간 단톡방 (하이브리드 패치 완료)
 # =====================================================================
 elif st.session_state.page == "chat_multi":
     user_name = st.session_state.user_name
@@ -1281,18 +1282,32 @@ elif st.session_state.page == "chat_multi":
 
     if "last_msg_time" not in st.session_state:
         st.session_state.last_msg_time = time.time()
+        st.session_state.multi_turn_count = 0
     
-    response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(30).execute()
+    response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(100).execute()
     db_history = list(reversed(response.data))
 
-    if not db_history:
+    # 멀티방 기억 변수 불러오기
+    st.session_state.mid_summaries_multi = []
+    st.session_state.core_belief_multi = ""
+    valid_chat_history = []
+
+    for row in db_history:
+        if row["role"] == "mid_summary":
+            st.session_state.mid_summaries_multi.append(row["message"])
+        elif row["role"] == "core_belief":
+            st.session_state.core_belief_multi = row["message"]
+        elif row["role"] in members + ["user", "assistant"]:
+            valid_chat_history.append(row)
+
+    if not valid_chat_history:
         initial_msg = "누가 단톡방 만들었어? ㅋㅋㅋ"
         supabase.table("chat_memory").insert({"user_name": db_room_name, "role": members[0], "message": initial_msg}).execute()
         st.session_state.last_msg_time = time.time()
         st.rerun()
 
     history_text_for_ai = ""
-    for row in db_history:
+    for row in valid_chat_history[-30:]: # 최신 대화만 렌더링
         role, msg = row["role"], row["message"]
         avatar = "😎" if role == "user" else "❄️" if role == "winter" else "🌸" if role == "seula" else "👦"
         name = user_name if role == "user" else "한겨울" if role == "winter" else "임슬아" if role == "seula" else "김민국"
@@ -1300,6 +1315,10 @@ elif st.session_state.page == "chat_multi":
         with st.chat_message("assistant" if role != "user" else "user", avatar=avatar):
             st.markdown(f"**{name}**\n\n{msg}")
         history_text_for_ai += f"{name}: {msg}\n"
+
+    # 🔥 멀티방 일기장 전체 불러오기
+    recent_summaries = "\n".join(st.session_state.mid_summaries_multi) if st.session_state.mid_summaries_multi else "아직 기록된 일기장 없음."
+    core_belief = st.session_state.core_belief_multi if st.session_state.core_belief_multi else "아직 뚜렷한 관계성 형성되지 않음."
 
     # --- 🧠 AI 자동 개입 로직 ---
     current_time = time.time()
@@ -1311,17 +1330,21 @@ elif st.session_state.page == "chat_multi":
         if "seula" in members: member_info += "[임슬아]: 여우 같은 연하녀, 벚꽃🌸 사용.\n"
         if "minguk" in members: member_info += "[김민국]: 능글맞은 남사친, 장난꾸러기.\n"
 
-        # 방금 마지막으로 말한 사람 (연속 말하기 방지용)
-        last_speaker = response.data[0]["role"] if response.data else "none"
+        # 방금 마지막으로 말한 사람
+        last_speaker = valid_chat_history[-1]["role"] if valid_chat_history else "none"
 
         director_persona = f"""
         너는 '{room_title}' 단톡방의 흐름을 조율하는 감독관이야.
         참여 캐릭터: {member_info}
+        
+        🧠 [단톡방 핵심 관계성 (영구 뼈대)]: {core_belief}
+        📖 [단톡방 과거 일기장 (모든 추억)]: {recent_summaries}
+        
         최근 대화:
         {history_text_for_ai}
 
         [절대 규칙]
-        1. 방금 마지막으로 말한 사람(현재 '{last_speaker}')이 연속으로 두 번 대답하게 하지 마! 반드시 다른 캐릭터가 말을 이어가게 해.
+        1. 방금 마지막으로 말한 사람(현재 '{last_speaker}')이 연속으로 두 번 대답하게 하지 마! 
         2. 만약 최근 대화의 마지막 메시지가 유저('{user_name}')의 채팅이라면, 하던 대화를 멈추고 무조건 유저의 말에 최우선으로 반응해.
         3. 할 말 없으면 PASS라고 해.
 
@@ -1337,7 +1360,7 @@ elif st.session_state.page == "chat_multi":
                 contents=director_persona,
                 config={"response_mime_type": "application/json"}
             )
-            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
+            # 🔥 완벽한 치트키
             raw_json_text = res.text.strip()
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
@@ -1350,6 +1373,22 @@ elif st.session_state.page == "chat_multi":
             if parsed.get("speaker") in members and parsed.get("message"):
                 supabase.table("chat_memory").insert({"user_name": db_room_name, "role": parsed["speaker"], "message": parsed["message"]}).execute()
                 st.session_state.last_msg_time = time.time()
+                st.session_state.multi_turn_count += 1
+                
+                # 🧠 [멀티방 기억 요약 로직 추가]
+                if st.session_state.multi_turn_count >= 10:
+                    hist_for_sum = "\n".join([f"{r['role']}: {r['message']}" for r in valid_chat_history[-20:]])
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
+                    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
+                    
+                    if len(st.session_state.mid_summaries_multi) % 3 == 0:
+                        all_mids = "\n".join(st.session_state.mid_summaries_multi)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
+                        supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
+                        supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
+                    
+                    st.session_state.multi_turn_count = 0
+                
                 st.rerun()
         except:
             pass
@@ -1358,4 +1397,5 @@ elif st.session_state.page == "chat_multi":
     if user_chat := st.chat_input("이들의 대화에 난입해보세요!"):
         supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "user", "message": user_chat}).execute()
         st.session_state.last_msg_time = time.time()
+        st.session_state.multi_turn_count += 1
         st.rerun()
