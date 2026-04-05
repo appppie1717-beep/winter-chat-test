@@ -368,9 +368,9 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v5.1.0 Beta ] 2026.04.03 (금)**
-            * **🧠 [치매 치료] 하이브리드 기억 로직 패치:** 일기장(중기 기억) 읽기 제한을 해제하여, 과거의 소중한 추억 디테일과 핵심 가치관이 완벽하게 융합되도록 개선.
-            * **🗣️ 단톡방 기억 동기화 완료:** 멀티방에서도 애들이 과거 일기장을 읽고 자아를 형성하도록 10턴 요약/강화 시스템 일괄 도입 완료.
+            **[ v5.2.0 Beta ] 2026.04.05 (일)**
+            * **🧠 지능 극대화 패치 완료:** 제미나이가 읽어들이는 단기 기억(날것의 대화)을 80턴으로 확장. 중기 기억(일기장) 로드를 20개로 최적화하여 얀데레 및 장기 서사 구현 완벽 패치.
+            * **🗣️ 유니티 C# 클라이언트 연동 완벽 호환:** 클라이언트는 뇌를 가지지 않도록 백엔드 역할 분담 완료.
             """)
 
 # =====================================================================
@@ -418,8 +418,8 @@ elif st.session_state.page == "chat_winter":
             supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
-    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
-    recent_summaries = "\n".join(st.session_state.mid_summaries) if st.session_state.mid_summaries else "아직 기록된 일기장 없음."
+    # 🔥 파이 패치: 일기장 최대 20개까지만 로드해서 프롬프트에 넣음 (무한 확장 방지)
+    recent_summaries = "\n".join(st.session_state.mid_summaries[-20:]) if st.session_state.mid_summaries else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief if st.session_state.core_belief else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection
     
@@ -583,7 +583,8 @@ elif st.session_state.page == "chat_winter":
                 target_role = "assistant" if target_role == "user" else "user"
                 
         valid_history.reverse()
-        valid_history = valid_history[-20:]
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
+        valid_history = valid_history[-80:]
 
         contents = []
         for r, t in valid_history:
@@ -665,6 +666,7 @@ elif st.session_state.page == "chat_winter":
         if st.session_state.turn_count >= 10: 
             with st.spinner("🧠 겨울이가 당신과의 에피소드를 일기장에 정리하고 있습니다..."):
                 try:
+                    # 🔥 주의: 요약은 무조건 '최근 10턴(20개)'만 잘라서 진행해야 함! 여기는 80으로 바꾸면 절대 안 됨!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history[-20:]])
                     
                     # 1. 일기장(중기 요약) 기록
@@ -739,8 +741,8 @@ elif st.session_state.page == "chat_seula":
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_seula) if st.session_state.inventory_seula else "아직 받은 선물 없음"
-    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
-    recent_summaries = "\n".join(st.session_state.mid_summaries_seula) if st.session_state.mid_summaries_seula else "아직 기록된 일기장 없음."
+    # 🔥 파이 패치: 일기장 최대 20개까지만 로드해서 프롬프트에 넣음
+    recent_summaries = "\n".join(st.session_state.mid_summaries_seula[-20:]) if st.session_state.mid_summaries_seula else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_seula if st.session_state.core_belief_seula else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_seula
     current_custom_persona = st.session_state.get("custom_persona_seula", DEFAULT_SEULA_PERSONA)
@@ -896,7 +898,9 @@ elif st.session_state.page == "chat_seula":
                 valid_history.append((r, t))
                 target_role = "assistant" if target_role == "user" else "user"
         valid_history.reverse()
-        valid_history = valid_history[-20:]
+        
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
+        valid_history = valid_history[-80:]
 
         contents = []
         for r, t in valid_history:
@@ -959,6 +963,7 @@ elif st.session_state.page == "chat_seula":
         if st.session_state.turn_count_seula >= 10: 
             with st.spinner("🌸 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_seula[-20:]])
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_seula.append(summ_res.text)
@@ -1023,8 +1028,8 @@ elif st.session_state.page == "chat_minguk":
             supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_minguk) if st.session_state.inventory_minguk else "아직 받은 선물 없음"
-    # 🔥 패치: 일기장 전체 불러오기 (용량 제한 해제)
-    recent_summaries = "\n".join(st.session_state.mid_summaries_minguk) if st.session_state.mid_summaries_minguk else "아직 기록된 일기장 없음."
+    # 🔥 파이 패치: 일기장 최대 20개까지만 로드
+    recent_summaries = "\n".join(st.session_state.mid_summaries_minguk[-20:]) if st.session_state.mid_summaries_minguk else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_minguk if st.session_state.core_belief_minguk else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_minguk
     current_custom_persona = st.session_state.get("custom_persona_minguk", DEFAULT_MINGUK_PERSONA)
@@ -1177,7 +1182,9 @@ elif st.session_state.page == "chat_minguk":
                 valid_history.append((r, t))
                 target_role = "assistant" if target_role == "user" else "user"
         valid_history.reverse()
-        valid_history = valid_history[-20:]
+        
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
+        valid_history = valid_history[-80:]
 
         contents = []
         for r, t in valid_history:
@@ -1240,6 +1247,7 @@ elif st.session_state.page == "chat_minguk":
         if st.session_state.turn_count_minguk >= 10: 
             with st.spinner("👦 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_minguk[-20:]])
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_minguk.append(summ_res.text)
@@ -1307,7 +1315,8 @@ elif st.session_state.page == "chat_multi":
         st.rerun()
 
     history_text_for_ai = ""
-    for row in valid_chat_history[-30:]: # 최신 대화만 렌더링
+    # 🔥 파이 패치: 단톡방 대화 내역도 최근 80개로 확장해서 딥하게 읽어들이게 함!
+    for row in valid_chat_history[-80:]: 
         role, msg = row["role"], row["message"]
         avatar = "😎" if role == "user" else "❄️" if role == "winter" else "🌸" if role == "seula" else "👦"
         name = user_name if role == "user" else "한겨울" if role == "winter" else "임슬아" if role == "seula" else "김민국"
@@ -1316,8 +1325,8 @@ elif st.session_state.page == "chat_multi":
             st.markdown(f"**{name}**\n\n{msg}")
         history_text_for_ai += f"{name}: {msg}\n"
 
-    # 🔥 멀티방 일기장 전체 불러오기
-    recent_summaries = "\n".join(st.session_state.mid_summaries_multi) if st.session_state.mid_summaries_multi else "아직 기록된 일기장 없음."
+    # 🔥 파이 패치: 멀티방 일기장 최대 20개 로드
+    recent_summaries = "\n".join(st.session_state.mid_summaries_multi[-20:]) if st.session_state.mid_summaries_multi else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_multi if st.session_state.core_belief_multi else "아직 뚜렷한 관계성 형성되지 않음."
 
     # --- 🧠 AI 자동 개입 로직 ---
@@ -1377,6 +1386,7 @@ elif st.session_state.page == "chat_multi":
                 
                 # 🧠 [멀티방 기억 요약 로직 추가]
                 if st.session_state.multi_turn_count >= 10:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만 잘라서 진행!
                     hist_for_sum = "\n".join([f"{r['role']}: {r['message']}" for r in valid_chat_history[-20:]])
                     summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
                     supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
