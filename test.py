@@ -594,7 +594,7 @@ elif st.session_state.page == "chat_winter":
         try:
             with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
                 response = client.models.generate_content(
-                    model="gemini-3-flash-preview",
+                    model="gemini-2.5-flash",
                     contents=contents,
                     config={
                         "system_instruction": winter_persona,
@@ -670,7 +670,7 @@ elif st.session_state.page == "chat_winter":
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history[-20:]])
                     
                     # 1. 일기장(중기 요약) 기록
-                    summ_res = client.models.generate_content(model="gemini-3-flash-preview", contents=f"아래 대화를 3줄로 요약해:\n{history_text}")
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
@@ -683,7 +683,7 @@ elif st.session_state.page == "chat_winter":
                         [기존 가치관]: {st.session_state.core_belief}
                         [새로운 일기장]: {all_mids}
                         """
-                        core_res = client.models.generate_content(model="gemini-3-flash-preview", contents=core_prompt)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_belief", "message": core_res.text}).execute()
@@ -910,7 +910,7 @@ elif st.session_state.page == "chat_seula":
         try:
             with st.spinner('🌸 슬아가 의미심장한 미소를 짓고 있습니다...'):
                 response = client.models.generate_content(
-                    model="gemini-3-flash-preview",
+                    model="gemini-2.5-flash",
                     contents=contents,
                     config={"system_instruction": seula_persona, "response_mime_type": "application/json"}
                 )
@@ -965,14 +965,14 @@ elif st.session_state.page == "chat_seula":
                 try:
                     # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_seula[-20:]])
-                    summ_res = client.models.generate_content(model="gemini-3-flash-preview", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_seula.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
                     if len(st.session_state.mid_summaries_seula) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_seula)
                         core_prompt = f"아래 일기장을 분석해서 임슬아가 유저({user_name})에게 가지는 핵심 가치관을 정리해. 반복되는 감정은 가중치를 주어 상단 배치.\n[기존 가치관]: {st.session_state.core_belief_seula}\n[새로운 일기장]: {all_mids}"
-                        core_res = client.models.generate_content(model="gemini-3-flash-preview", contents=core_prompt)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief_seula = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "core_belief", "message": core_res.text}).execute()
@@ -1194,7 +1194,7 @@ elif st.session_state.page == "chat_minguk":
         try:
             with st.spinner('👦 민국이가 반존대 섞인 답장을 고민 중입니다...'):
                 response = client.models.generate_content(
-                    model="gemini-3-flash-preview",
+                    model="gemini-2.5-flash",
                     contents=contents,
                     config={"system_instruction": minguk_persona, "response_mime_type": "application/json"}
                 )
@@ -1249,14 +1249,14 @@ elif st.session_state.page == "chat_minguk":
                 try:
                     # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_minguk[-20:]])
-                    summ_res = client.models.generate_content(model="gemini-3-flash-preview", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_minguk.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
                     if len(st.session_state.mid_summaries_minguk) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_minguk)
                         core_prompt = f"아래 일기장을 분석해서 김민국이 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief_minguk}\n[새로운 일기장]: {all_mids}"
-                        core_res = client.models.generate_content(model="gemini-3-flash-preview", contents=core_prompt)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
                         st.session_state.core_belief_minguk = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "core_belief", "message": core_res.text}).execute()
@@ -1365,7 +1365,7 @@ elif st.session_state.page == "chat_multi":
         """
         try:
             res = client.models.generate_content(
-                model="gemini-3-flash-preview",
+                model="gemini-2.5-flash",
                 contents=director_persona,
                 config={"response_mime_type": "application/json"}
             )
@@ -1388,12 +1388,12 @@ elif st.session_state.page == "chat_multi":
                 if st.session_state.multi_turn_count >= 10:
                     # 🔥 요약은 무조건 최근 10턴(20개)만 잘라서 진행!
                     hist_for_sum = "\n".join([f"{r['role']}: {r['message']}" for r in valid_chat_history[-20:]])
-                    summ_res = client.models.generate_content(model="gemini-3-flash-preview", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
                     supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
                     if len(st.session_state.mid_summaries_multi) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_multi)
-                        core_res = client.models.generate_content(model="gemini-3-flash-preview", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
                         supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
                     
