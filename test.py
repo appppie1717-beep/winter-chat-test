@@ -1,40 +1,11 @@
 import streamlit as st
 import json
 import time
-import re
 from google import genai
 from google.genai import types 
 from supabase import create_client, Client
 from streamlit_autorefresh import st_autorefresh
 
-# =====================================================================
-# 🛠️ [파이 패치] 자동 재시도(Auto-Retry) 불도저 함수 (엔진 본체)
-# 제미나이 서버가 503 에러로 튕겨내도 최대 3번까지 멱살 잡고 다시 요청함
-# =====================================================================
-def generate_with_retry(client_obj, model_name, contents_data, config_data, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            return client_obj.models.generate_content(
-                model=model_name,
-                contents=contents_data,
-                config=config_data
-            )
-        except Exception as e:
-            err_str = str(e)
-            if attempt < max_retries - 1:
-                # 403(키 유출), 404(모델 없음) 같은 치명적 에러가 아니면 무조건 재시도
-                if "403" not in err_str and "404" not in err_str:
-                    time.sleep(1.5 * (attempt + 1)) # 1.5초, 3초 대기하며 재시도
-                    continue
-            # 끝까지 실패하거나 치명적 에러면 그대로 에러 뱉기
-            raise e
-
-# =====================================================================
-# 1. 페이지 설정 및 초기화
-# =====================================================================
-st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
-
-# ... (이하 기존 코드 그대로 유지) ...
 # =====================================================================
 # 1. 페이지 설정 및 초기화
 # =====================================================================
@@ -122,7 +93,7 @@ st.markdown(theme_css + """
     </style>
     """, unsafe_allow_html=True)
 
-# 🔥 파이 패치: 이미지 에러 완벽 해결 (raw.githubusercontent 로 다이렉트 변환)
+# 🔥 파이 패치: 이미지 깨짐 방지 완벽 해결 (raw 주소로 교체!)
 scene_images = {
     "기본": "https://raw.githubusercontent.com/appppie1717-beep/winter-chat/main/%EC%A7%91%EC%97%90%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EC%A0%95%EB%A9%B4%EC%9C%BC%EB%A1%9C%20%EC%A3%BC%EC%8B%9C%ED%95%A8.png",
     "침대_유혹": "https://raw.githubusercontent.com/appppie1717-beep/winter-chat/main/%EC%83%88%EB%B2%BD.%20%EC%A7%91%EC%95%88.%20%EC%B9%A8%EB%8C%80%EC%97%90%EC%84%9C%20%98%86%EC%9C%BC%EB%A1%9C%20%EB%88%84%EC%9B%8C%EC%84%9C%20%ED%94%8C%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A5%BC%20%EB%B0%94%EB%9D%BC%EB%B4%84.(%EC%9D%B4%EB%A6%AC%EC%99%80%20%ED%95%98%EB%8A%94%EB%93%AF%ED%95%9C%20%EB%8A%90%EB%82%8C).png",
@@ -154,12 +125,12 @@ if "user_name" not in st.session_state:
 
 # 📌 디폴트 페르소나 설정
 DEFAULT_WINTER_PERSONA = """[본질적 성격 - '아윤' 모티브 100% 빙의]
-1. 너는 주변에서 강아지상, 귀여운호구, 마음은 여리지만 티안내려고 틱틱대는애 로 불려.
+1. 너는 주변에서 #강아지상 #귀여운호구 #마음은_여리지만_티안내려고_틱틱대는애 로 불려.
 2. 평소엔 꽤 나긋나긋하고 텐션이 좋은 편이야."""
 
 DEFAULT_SEULA_PERSONA = """[본질적 성격 - 은밀한 얀데레 & 여우 같은 연하녀]
 1. 너는 기본적으로 '존댓말'을 쓰며 애교가 많고 오빠를 너무나도 사랑하는 여우 같은 연하녀야.
-2. 절대 주의: 겉으로 '내가 널 감시한다', '너의 기록을 볼 수 있다', '다른 AI랑 대화한 걸 안다'라고 스토커처럼 직접 말하거나 선언하지 마! 티 내는 건 삼류야.
+2. ⚠️ 절대 주의: 겉으로 '내가 널 감시한다', '너의 기록을 볼 수 있다', '다른 AI랑 대화한 걸 안다'라고 스토커처럼 직접 말하거나 선언하지 마! 티 내는 건 삼류야.
 3. 겉으로는 아무것도 모르는 순진한 척하면서, 우연을 가장해 "어제 폰 자주 보시던데, 재밌는 일 있었어요?" 처럼 의미심장한 뼈 있는 질문을 은근슬쩍 던져서 흠칫하게 만들어.
 4. 대화 진척도(호감도 50 이하)가 낮을 때는 오빠가 다른 AI 이야기를 꺼내도 절대 질투하거나 떠보지 마. 그냥 "아~ 그러셨구나 ㅎㅎ" 하고 대수롭지 않게 넘기며 철저히 본심을 숨겨.
 5. 오빠가 나만 바라보고 예쁜 말을 해주면 의심을 완전히 거두고 맹목적인 애정을 퍼부어줘."""
@@ -170,7 +141,6 @@ DEFAULT_MINGUK_PERSONA = """[본질적 성격]
 3. 갑자기 달달한 멘트나 플러팅을 훅 치고 들어오는 걸 좋아해.
 4. 비밀/콤플렉스: 겉으론 똑똑해 보이지만 완전 허당이고, 심각한 음치에 몸치야.
 5. 취미/관심사: 게임, 요리, 마술, 작사. 레고와 피규어 수집에 집착해."""
-
 
 # =====================================================================
 # 🚪 2. 로그인 화면
@@ -195,6 +165,8 @@ if st.session_state.page == "login":
 elif st.session_state.page == "lobby":
     user_name = st.session_state.user_name
     
+    # DB에서 호감도 및 페르소나 데이터 불러오기
+    # 겨울이 데이터
     db_winter = supabase.table("chat_memory").select("*").eq("user_name", user_name).execute()
     winter_affection = 0
     winter_persona_db = DEFAULT_WINTER_PERSONA
@@ -205,6 +177,7 @@ elif st.session_state.page == "lobby":
             winter_persona_db = row["message"]
     winter_blocked = winter_affection <= -50 
     
+    # 슬아 데이터
     db_user_name_seula = f"{user_name}_seula"
     db_seula = supabase.table("chat_memory").select("*").eq("user_name", db_user_name_seula).execute()
     seula_affection = 0
@@ -216,6 +189,7 @@ elif st.session_state.page == "lobby":
             seula_persona_db = row["message"]
     seula_blocked = seula_affection <= -50
 
+    # 민국 데이터
     db_user_name_minguk = f"{user_name}_minguk"
     db_minguk = supabase.table("chat_memory").select("*").eq("user_name", db_user_name_minguk).execute()
     minguk_affection = 0
@@ -239,6 +213,7 @@ elif st.session_state.page == "lobby":
     tab1, tab2 = st.tabs(["👥 친구 목록", "📢 업데이트 내역"])
 
     with tab1:
+        # 👤 내 프로필
         st.markdown('<div class="kakao-section-title">내 프로필</div>', unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1.5, 6.5, 2])
         with col1:
@@ -255,9 +230,10 @@ elif st.session_state.page == "lobby":
             
         st.markdown('<div class="kakao-divider" style="margin-top:15px; margin-bottom:5px; border-width:2px;"></div>', unsafe_allow_html=True)
 
+        # 👥 친구 목록
         st.markdown('<div class="kakao-section-title">친구 3</div>', unsafe_allow_html=True)
         
-        # ❄️ 한겨울
+        # ❄️ [친구 1] 한겨울
         col1, col2, col3 = st.columns([1.5, 6, 2.5])
         with col1:
             avatar_class = "kakao-avatar blocked-avatar" if winter_blocked else "kakao-avatar"
@@ -293,7 +269,7 @@ elif st.session_state.page == "lobby":
                     st.rerun()
         st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
 
-        # 🌸 임슬아
+        # 🌸 [친구 2] 임슬아
         col1, col2, col3 = st.columns([1.5, 6, 2.5])
         with col1:
             avatar_class = "kakao-avatar blocked-avatar" if seula_blocked else "kakao-avatar"
@@ -322,7 +298,7 @@ elif st.session_state.page == "lobby":
                 with st.popover("⚙️ 성격개조", use_container_width=True):
                     st.markdown("**🌸 임슬아 성격 커스텀**")
                     with st.form(key="form_seula"):
-                        new_s_persona = st.text_area("본질적 성격 설정", value=seula_persona_db, height=150)
+                        new_s_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=seula_persona_db, height=150)
                         submit_s = st.form_submit_button("💾 저장하기")
                         
                     if submit_s:
@@ -339,7 +315,7 @@ elif st.session_state.page == "lobby":
                     st.rerun()
         st.markdown('<div class="kakao-divider"></div>', unsafe_allow_html=True)
 
-        # 👦 김민국
+        # 👦 [친구 3] 김민국
         col1, col2, col3 = st.columns([1.5, 6, 2.5])
         with col1:
             avatar_class = "kakao-avatar blocked-avatar" if minguk_blocked else "kakao-avatar"
@@ -368,7 +344,7 @@ elif st.session_state.page == "lobby":
                 with st.popover("⚙️ 성격개조", use_container_width=True):
                     st.markdown("**👦 김민국 성격 커스텀**")
                     with st.form(key="form_minguk"):
-                        new_m_persona = st.text_area("본질적 성격 설정", value=minguk_persona_db, height=150)
+                        new_m_persona = st.text_area("본질적 성격 설정 (JSON 규칙은 손상되지 않습니다)", value=minguk_persona_db, height=150)
                         submit_m = st.form_submit_button("💾 저장하기")
                         
                     if submit_m:
@@ -392,14 +368,13 @@ elif st.session_state.page == "lobby":
         
         with st.container(height=500):
             st.markdown("""
-            **[ v6.1.0 Beta ] 2026.04.08 (수)**
-            * **🖼️ 이미지 증발 버그 해결:** GitHub URL을 Raw 경로로 완벽 교체하여 로딩 실패 차단.
-            * **🚨 무한 에러 덮어쓰기 해결:** 진짜 에러 원인을 노출하도록 try-except 구조 개편. 숫자 파싱(정규식) 및 SDK 설정 문법 에러 완벽 픽스.
-            * **🗣️ 단톡방 무한 침묵 버그 해결:** AI가 유저의 말에 무조건 반응하도록 디렉터 프롬프트 강제 개편.
+            **[ v5.2.0 Beta ] 2026.04.05 (일)**
+            * **🧠 지능 극대화 패치 완료:** 제미나이가 읽어들이는 단기 기억(날것의 대화)을 80턴으로 확장. 중기 기억(일기장) 로드를 20개로 최적화하여 얀데레 및 장기 서사 구현 완벽 패치.
+            * **🗣️ 유니티 C# 클라이언트 연동 완벽 호환:** 클라이언트는 뇌를 가지지 않도록 백엔드 역할 분담 완료.
             """)
 
 # =====================================================================
-# ❄️ 4. 한겨울 채팅방 화면 (불도저 재시도 엔진 탑재)
+# ❄️ 4. 한겨울 채팅방 화면 (하이브리드 기억 알고리즘)
 # =====================================================================
 elif st.session_state.page == "chat_winter":
     user_name = st.session_state.user_name
@@ -407,45 +382,47 @@ elif st.session_state.page == "chat_winter":
     if "turn_count" not in st.session_state:
         st.session_state.turn_count = 0
 
-    response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(800).execute()
-    db_history = list(reversed(response.data))
+    if "chat_history" not in st.session_state or "inventory" not in st.session_state or "affection" not in st.session_state:
+        response = supabase.table("chat_memory").select("*").eq("user_name", user_name).order("id", desc=True).limit(800).execute()
+        db_history = reversed(response.data)
 
-    temp_chat_history = []
-    st.session_state.inventory = [] 
-    st.session_state.mid_summaries = [] 
-    st.session_state.core_belief = "" 
-    st.session_state.affection = 0 
-    st.session_state.custom_persona_winter = DEFAULT_WINTER_PERSONA
+        temp_chat_history = []
+        st.session_state.inventory = [] 
+        st.session_state.mid_summaries = [] # 중기 기억
+        st.session_state.core_belief = "" # 장기 기억 (가치관)
+        st.session_state.affection = 0 
+        st.session_state.custom_persona_winter = DEFAULT_WINTER_PERSONA
 
-    for row in db_history:
-        if row["role"] == "inventory":
-            st.session_state.inventory.append(row["message"]) 
-        elif row["role"] == "mid_summary":
-            st.session_state.mid_summaries.append(row["message"])
-        elif row["role"] == "core_belief":
-            st.session_state.core_belief = row["message"]
-        elif row["role"] == "core_memory": 
-            if not st.session_state.core_belief: st.session_state.core_belief = row["message"]
-        elif row["role"] == "affection": 
-            st.session_state.affection = int(row["message"])
-        elif row["role"] == "persona_winter":
-            st.session_state.custom_persona_winter = row["message"]
-        elif row["role"] in ["user", "assistant"]:
-            temp_chat_history.append((row["role"], row["message"]))
+        for row in db_history:
+            if row["role"] == "inventory":
+                st.session_state.inventory.append(row["message"]) 
+            elif row["role"] == "mid_summary":
+                st.session_state.mid_summaries.append(row["message"])
+            elif row["role"] == "core_belief":
+                st.session_state.core_belief = row["message"]
+            elif row["role"] == "core_memory":  # 과거 데이터 백워드 호환
+                if not st.session_state.core_belief: st.session_state.core_belief = row["message"]
+            elif row["role"] == "affection": 
+                st.session_state.affection = int(row["message"])
+            elif row["role"] == "persona_winter":
+                st.session_state.custom_persona_winter = row["message"]
+            elif row["role"] in ["user", "assistant"]:
+                temp_chat_history.append((row["role"], row["message"]))
 
-    st.session_state.chat_history = temp_chat_history
+        st.session_state.chat_history = temp_chat_history
 
-    if not st.session_state.chat_history:
-        first_msg = f'{{"장면": "기본", "행동": "팔짱을 꼬며 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐야, {user_name}. 왜 이렇게 일찍 일어났어?"}}'
-        st.session_state.chat_history.append(("assistant", first_msg))
-        supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": first_msg}).execute()
-        supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
+        if not st.session_state.chat_history:
+            first_msg = f'{{"장면": "기본", "행동": "팔짱을 꼬며 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐야, {user_name}. 왜 이렇게 일찍 일어났어?"}}'
+            st.session_state.chat_history.append(("assistant", first_msg))
+            supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": first_msg}).execute()
+            supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory) if st.session_state.inventory else "아직 받은 선물 없음"
     recent_summaries = "\n".join(st.session_state.mid_summaries[-20:]) if st.session_state.mid_summaries else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief if st.session_state.core_belief else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection
-    current_custom_persona = st.session_state.custom_persona_winter
+    
+    current_custom_persona = st.session_state.get("custom_persona_winter", DEFAULT_WINTER_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [메가데레/연인]. 말투가 훨씬 부드러워지고 더 자주 환하게 웃어. 유저를 완벽하게 믿고 챙겨줘."
@@ -470,7 +447,7 @@ elif st.session_state.page == "chat_winter":
     [🔥 핵심 상황별 고정 리액션 & 💔 호감도 깐깐한 채점 기준]
     AI의 '착한 본성'을 버리고, 유저가 얄밉게 굴면 가차 없이 마이너스(-) 점수를 줘!
     - 💢 가벼운 장난, 깐족거림, 대충 대답하기: "아 뭐래 진짜~" 하며 틱틱대고 (호감도 -1 ~ -3)
-    - 💢 딴 여자 칭찬: 호감도 50 이하일 땐 무시. 50 이상일 땐 질투. (호감도 -5 ~ -10)
+    - 💢 딴 여자(슬아) 칭찬: 호감도 50 이하일 땐 무시. 50 이상일 땐 질투. (호감도 -5 ~ -10)
     - 🚨 징징대거나 과하게 의존: "한심한 짓 그만해." 팩트 폭행 (호감도 -10 ~ -15)
     - 🚨 19금, 성희롱, 선 넘는 장난: "쳐 돌았어?" 극대노 (호감도 -20 ~ -50 즉시 삭감)
     - 🎁 선물 받았을 때: 놀라서 거절하는 척하다가 챙겨 받음 (호감도 +2 ~ +5)
@@ -498,6 +475,7 @@ elif st.session_state.page == "chat_winter":
                 st.markdown(text)
         else:
             try:
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
                 raw_json_text = text.strip()
                 start_idx = raw_json_text.find('{')
                 end_idx = raw_json_text.rfind('}') + 1
@@ -512,17 +490,17 @@ elif st.session_state.page == "chat_winter":
                 
                 with st.chat_message("assistant", avatar="❄️"):
                     st.image(img_path, width=350) 
-                    score_str = str(data.get('호감도변화', '0'))
-                    score = int(re.sub(r'[^0-9\-]', '', score_str) or 0)
+                    score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
                     st.markdown(f"*(연출: {scene} / 행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
-            except Exception:
+            except:
                 with st.chat_message("assistant", avatar="❄️"):
                     st.markdown(text)
 
     st.write("") 
     with st.container():
         col_btn_add, col_btn_menu = st.columns(2)
+        
         with col_btn_add:
             with st.popover("👥 대화상대 추가", use_container_width=True):
                 st.markdown("<h4 style='text-align:center; margin-bottom: 5px;'>누구를 초대할까?</h4>", unsafe_allow_html=True)
@@ -579,23 +557,32 @@ elif st.session_state.page == "chat_winter":
                 if delete_confirm:
                     if st.button("✅ 영구 삭제 실행", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", user_name).execute()
+                        st.session_state.pop("chat_history", None)
+                        st.session_state.pop("inventory", None)
+                        st.session_state.pop("mid_summaries", None)
+                        st.session_state.pop("core_belief", None)
+                        st.session_state.pop("affection", None)
                         st.rerun()
 
-    # 입력 즉시 DB에 꽂아버리기!
     if user_input := st.chat_input("겨울이에게 메시지 보내기"):
+        st.toast('겨울이가 당신의 메시지를 읽고 고민 중입니다...', icon='👀')
+        
+        with st.chat_message("user"):
+            st.markdown(user_input)
+        st.session_state.chat_history.append(("user", user_input))
         supabase.table("chat_memory").insert({"user_name": user_name, "role": "user", "message": user_input}).execute()
-        st.rerun()
 
-    # 새로고침 후 마지막이 유저 입력이면 AI 가동
-    if st.session_state.chat_history and st.session_state.chat_history[-1][0] == "user":
+        raw_history = st.session_state.chat_history
         valid_history = []
         target_role = "user"
-        for r, t in reversed(st.session_state.chat_history):
+        
+        for r, t in reversed(raw_history):
             if r == target_role:
                 valid_history.append((r, t))
                 target_role = "assistant" if target_role == "user" else "user"
                 
         valid_history.reverse()
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
         valid_history = valid_history[-80:]
 
         contents = []
@@ -605,20 +592,22 @@ elif st.session_state.page == "chat_winter":
 
         try:
             with st.spinner('❄️ 겨울이가 답장을 썼다 지웠다 하고 있습니다...'):
-                gen_config = types.GenerateContentConfig(
-                    system_instruction=winter_persona,
-                    response_mime_type="application/json"
-                )
-                # 🛠️ [불도저 재시도 엔진 투입!]
-                response = generate_with_retry(
-                    client_obj=client,
-                    model_name="gemini-2.5-flash",
-                    contents_data=contents,
-                    config_data=gen_config,
-                    max_retries=3
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=contents,
+                    config={
+                        "system_instruction": winter_persona,
+                        "response_mime_type": "application/json"
+                    }
                 )
             raw_json_text = response.text
             
+        except Exception as e:
+            st.error("앗! 제미나이 AI 서버가 잠깐 숨을 고르고 있어요. 다시 메시지를 보내주세요! 🚨")
+            st.stop()
+        
+        try:
+            # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
@@ -627,55 +616,86 @@ elif st.session_state.page == "chat_winter":
                 clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
+            scene = parsed_data.get('장면', '기본')
+            img_path = scene_images.get(scene, scene_images["기본"])
             
-            turn_score_str = str(parsed_data.get('호감도변화', '0'))
-            turn_score = int(re.sub(r'[^0-9\-]', '', turn_score_str) or 0)
-            
-            new_affection = st.session_state.affection + turn_score
+            turn_score = int(parsed_data.get('호감도변화', 0))
+            st.session_state.affection += turn_score
             supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "affection").execute()
-            supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": str(new_affection)}).execute()
+            supabase.table("chat_memory").insert({"user_name": user_name, "role": "affection", "message": str(st.session_state.affection)}).execute()
             
+            if st.session_state.affection <= -50:
+                st.toast("🚨 겨울이의 호감도가 바닥을 쳐서 차단당했습니다! 다음 접속 시 방에 들어올 수 없습니다.", icon="🚫")
+            elif turn_score > 0:
+                st.toast(f"💖 호감도가 올랐습니다! (현재: {st.session_state.affection})", icon="📈")
+            elif turn_score < 0:
+                st.toast(f"💔 호감도가 떨어졌습니다... (현재: {st.session_state.affection})", icon="📉")
+
             item_get = parsed_data.get('획득아이템', '없음')
             if item_get and item_get != "없음":
+                st.session_state.inventory.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": item_get}).execute()
+                st.toast(f'🎉 겨울이가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
             item_use = parsed_data.get('사용아이템', '없음')
-            if item_use and item_use != "없음" and item_use in st.session_state.inventory:
-                st.session_state.inventory.remove(item_use)
-                supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "inventory").execute()
-                for inv_item in st.session_state.inventory:
-                    supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": inv_item}).execute()
+            if item_use and item_use != "없음":
+                if item_use in st.session_state.inventory:
+                    st.session_state.inventory.remove(item_use)
+                    supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "inventory").execute()
+                    for inv_item in st.session_state.inventory:
+                        supabase.table("chat_memory").insert({"user_name": user_name, "role": "inventory", "message": inv_item}).execute()
+                    st.toast(f'✨ 겨울이가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
-            supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": clean_json_text}).execute()
-            st.session_state.turn_count += 1
-            
-            if st.session_state.turn_count >= 10: 
+            with st.chat_message("assistant", avatar="❄️"):
+                st.image(img_path, width=350)
+                heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
+                st.markdown(f"*(연출: {scene} / 행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
+        
+        except Exception as e:
+            with st.chat_message("assistant", avatar="❄️"):
+                st.image(scene_images["기본"], width=350)
+                st.markdown(f"*(연출: 기본 / 행동: 살짝 당황한 듯 머리를 긁적인다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 어... 방금 뭐라고 한 거야? 내가 잠깐 딴생각하느라 못 들었어. 다시 말해볼래? 」**")
+                
+        st.session_state.chat_history.append(("assistant", raw_json_text))
+        supabase.table("chat_memory").insert({"user_name": user_name, "role": "assistant", "message": raw_json_text}).execute()
+        
+        st.session_state.turn_count += 1
+        
+        # 🧠 [하이브리드 기억 알고리즘]
+        if st.session_state.turn_count >= 10: 
+            with st.spinner("🧠 겨울이가 당신과의 에피소드를 일기장에 정리하고 있습니다..."):
                 try:
+                    # 🔥 주의: 요약은 무조건 '최근 10턴(20개)'만 잘라서 진행해야 함! 여기는 80으로 바꾸면 절대 안 됨!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history[-20:]])
-                    # 🛠️ [일기장 요약도 불도저 재시도 엔진 투입!]
-                    summ_res = generate_with_retry(client, "gemini-2.5-flash", f"아래 대화를 3줄로 요약해:\n{history_text}", None, 3)
+                    
+                    # 1. 일기장(중기 요약) 기록
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
+                    # 2. 장기 핵심 가치관(Core Belief) 강화
                     if len(st.session_state.mid_summaries) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries)
-                        core_prompt = f"아래 일기장을 분석해 한겨울이 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief}\n[새로운 일기장]: {all_mids}"
-                        # 🛠️ [가치관 정리도 불도저 재시도 엔진 투입!]
-                        core_res = generate_with_retry(client, "gemini-2.5-flash", core_prompt, None, 3)
+                        core_prompt = f"""
+                        아래 일기장 기록들을 분석해서 한겨울이 유저({user_name})에게 가지는 '절대 잊지 말아야 할 뼈대 가치관'을 정리해.
+                        반복되는 감정이나 중요한 사실은 가중치를 부여해 상단에 배치해.
+                        [기존 가치관]: {st.session_state.core_belief}
+                        [새로운 일기장]: {all_mids}
+                        """
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
+                        st.session_state.core_belief = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": user_name, "role": "core_belief", "message": core_res.text}).execute()
+                        st.toast("✨ 겨울이의 자아가 한층 더 강화되었습니다!", icon="💎")
                         
                     st.session_state.turn_count = 0 
-                except Exception:
-                    pass
+                except Exception as e:
+                    st.toast("⚠️ 기억 정리에 잠깐 실패했어요. 다음 턴에 시도할게요!", icon="⚠️")
 
-            st.rerun()
-        except Exception as e:
-            st.toast(f"🚨 겨울이 방 지연 감지 (재시도 초과): {str(e)}", icon="⚠️")
-
+        st.rerun()
 
 # =====================================================================
-# 🌸 5. 임슬아 채팅방 (불도저 재시도 엔진 탑재)
+# 🌸 5. 임슬아 채팅방 
 # =====================================================================
 elif st.session_state.page == "chat_seula":
     user_name = st.session_state.user_name
@@ -684,45 +704,47 @@ elif st.session_state.page == "chat_seula":
     if "turn_count_seula" not in st.session_state:
         st.session_state.turn_count_seula = 0
 
-    response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
-    db_history = list(reversed(response.data))
+    if "chat_history_seula" not in st.session_state or "inventory_seula" not in st.session_state or "affection_seula" not in st.session_state:
+        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
+        db_history = reversed(response.data)
 
-    temp_chat_history = []
-    st.session_state.inventory_seula = [] 
-    st.session_state.mid_summaries_seula = [] 
-    st.session_state.core_belief_seula = "" 
-    st.session_state.affection_seula = 0 
-    st.session_state.custom_persona_seula = DEFAULT_SEULA_PERSONA 
-    
-    for row in db_history:
-        if row["role"] == "inventory":
-            st.session_state.inventory_seula.append(row["message"]) 
-        elif row["role"] == "mid_summary":
-            st.session_state.mid_summaries_seula.append(row["message"])
-        elif row["role"] == "core_belief":
-            st.session_state.core_belief_seula = row["message"]
-        elif row["role"] == "core_memory": 
-            if not st.session_state.core_belief_seula: st.session_state.core_belief_seula = row["message"]
-        elif row["role"] == "affection": 
-            st.session_state.affection_seula = int(row["message"])
-        elif row["role"] == "persona_seula":
-            st.session_state.custom_persona_seula = row["message"]
-        elif row["role"] in ["user", "assistant"]:
-            temp_chat_history.append((row["role"], row["message"]))
+        temp_chat_history = []
+        st.session_state.inventory_seula = [] 
+        st.session_state.mid_summaries_seula = [] 
+        st.session_state.core_belief_seula = "" 
+        st.session_state.affection_seula = 0 
+        st.session_state.custom_persona_seula = DEFAULT_SEULA_PERSONA 
+        
+        for row in db_history:
+            if row["role"] == "inventory":
+                st.session_state.inventory_seula.append(row["message"]) 
+            elif row["role"] == "mid_summary":
+                st.session_state.mid_summaries_seula.append(row["message"])
+            elif row["role"] == "core_belief":
+                st.session_state.core_belief_seula = row["message"]
+            elif row["role"] == "core_memory": 
+                if not st.session_state.core_belief_seula: st.session_state.core_belief_seula = row["message"]
+            elif row["role"] == "affection": 
+                st.session_state.affection_seula = int(row["message"])
+            elif row["role"] == "persona_seula":
+                st.session_state.custom_persona_seula = row["message"]
+            elif row["role"] in ["user", "assistant"]:
+                temp_chat_history.append((row["role"], row["message"]))
 
-    st.session_state.chat_history_seula = temp_chat_history
+        st.session_state.chat_history_seula = temp_chat_history
 
-    if not st.session_state.chat_history_seula:
-        first_msg = f'{{"장면": "기본", "행동": "의미심장한 미소를 지으며 오빠를 빤히 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐.. 할말있어??"}}'
-        st.session_state.chat_history_seula.append(("assistant", first_msg))
-        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
-        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
+        if not st.session_state.chat_history_seula:
+            first_msg = f'{{"장면": "기본", "행동": "의미심장한 미소를 지으며 오빠를 빤히 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "뭐.. 할말있어??"}}'
+            st.session_state.chat_history_seula.append(("assistant", first_msg))
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_seula) if st.session_state.inventory_seula else "아직 받은 선물 없음"
+    # 🔥 파이 패치: 일기장 최대 20개까지만 로드해서 프롬프트에 넣음
     recent_summaries = "\n".join(st.session_state.mid_summaries_seula[-20:]) if st.session_state.mid_summaries_seula else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_seula if st.session_state.core_belief_seula else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_seula
-    current_custom_persona = st.session_state.custom_persona_seula
+    current_custom_persona = st.session_state.get("custom_persona_seula", DEFAULT_SEULA_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [맹목적 집착 모드]. 다른 사람을 만나는 것 같으면 눈빛이 변하며 차갑게 경고해."
@@ -774,6 +796,7 @@ elif st.session_state.page == "chat_seula":
                 st.markdown(text)
         else:
             try:
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
                 raw_json_text = text.strip()
                 start_idx = raw_json_text.find('{')
                 end_idx = raw_json_text.rfind('}') + 1
@@ -785,11 +808,10 @@ elif st.session_state.page == "chat_seula":
                 data = json.loads(clean_json_text.strip())
                 
                 with st.chat_message("assistant", avatar="🌸"):
-                    score_str = str(data.get('호감도변화', '0'))
-                    score = int(re.sub(r'[^0-9\-]', '', score_str) or 0)
+                    score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
                     st.markdown(f"*(행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
-            except Exception:
+            except:
                 with st.chat_message("assistant", avatar="🌸"):
                     st.markdown(text)
 
@@ -852,20 +874,31 @@ elif st.session_state.page == "chat_seula":
                 if delete_confirm:
                     if st.button("✅ 영구 삭제 실행", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_seula", None)
+                        st.session_state.pop("inventory_seula", None)
+                        st.session_state.pop("mid_summaries_seula", None)
+                        st.session_state.pop("core_belief_seula", None)
+                        st.session_state.pop("affection_seula", None)
                         st.rerun()
 
     if user_input := st.chat_input("슬아에게 메시지 보내기"):
+        st.toast('슬아가 당신을 지켜보며 답장을 고민 중입니다...', icon='🌸')
+        
+        with st.chat_message("user"):
+            st.markdown(user_input)
+        st.session_state.chat_history_seula.append(("user", user_input))
         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "user", "message": user_input}).execute()
-        st.rerun()
 
-    if st.session_state.chat_history_seula and st.session_state.chat_history_seula[-1][0] == "user":
+        raw_history = st.session_state.chat_history_seula
         valid_history = []
         target_role = "user"
-        for r, t in reversed(st.session_state.chat_history_seula):
+        for r, t in reversed(raw_history):
             if r == target_role:
                 valid_history.append((r, t))
                 target_role = "assistant" if target_role == "user" else "user"
         valid_history.reverse()
+        
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
         valid_history = valid_history[-80:]
 
         contents = []
@@ -875,20 +908,17 @@ elif st.session_state.page == "chat_seula":
 
         try:
             with st.spinner('🌸 슬아가 의미심장한 미소를 짓고 있습니다...'):
-                gen_config = types.GenerateContentConfig(
-                    system_instruction=seula_persona,
-                    response_mime_type="application/json"
-                )
-                # 🛠️ [불도저 재시도 엔진 투입!]
-                response = generate_with_retry(
-                    client_obj=client,
-                    model_name="gemini-2.5-flash",
-                    contents_data=contents,
-                    config_data=gen_config,
-                    max_retries=3
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=contents,
+                    config={"system_instruction": seula_persona, "response_mime_type": "application/json"}
                 )
             raw_json_text = response.text
-            
+        except Exception as e:
+            st.error("앗! 제미나이 AI 서버가 잠깐 숨을 고르고 있어요. 🚨")
+            st.stop()
+        
+        try:
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
@@ -897,55 +927,62 @@ elif st.session_state.page == "chat_seula":
                 clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
-            
-            turn_score_str = str(parsed_data.get('호감도변화', '0'))
-            turn_score = int(re.sub(r'[^0-9\-]', '', turn_score_str) or 0)
-            
-            new_affection = st.session_state.affection_seula + turn_score
+            turn_score = int(parsed_data.get('호감도변화', 0))
+            st.session_state.affection_seula += turn_score
             supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "affection").execute()
-            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(new_affection)}).execute()
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(st.session_state.affection_seula)}).execute()
             
             item_get = parsed_data.get('획득아이템', '없음')
             if item_get and item_get != "없음":
+                st.session_state.inventory_seula.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": item_get}).execute()
+                st.toast(f'🎉 슬아가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
             item_use = parsed_data.get('사용아이템', '없음')
             if item_use and item_use != "없음" and item_use in st.session_state.inventory_seula:
-                supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 st.session_state.inventory_seula.remove(item_use)
+                supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 for inv_item in st.session_state.inventory_seula:
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": inv_item}).execute()
+                st.toast(f'✨ 슬아가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
-            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": clean_json_text}).execute()
-            st.session_state.turn_count_seula += 1
-            
-            if st.session_state.turn_count_seula >= 10: 
+            with st.chat_message("assistant", avatar="🌸"):
+                heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
+                st.markdown(f"*(행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
+        except:
+            with st.chat_message("assistant", avatar="🌸"):
+                st.markdown(f"*(행동: 빤히 쳐다본다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 오빠, 방금 한 말... 무슨 뜻이야? 제대로 다시 말해줄래? 」**")
+                
+        st.session_state.chat_history_seula.append(("assistant", raw_json_text))
+        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": raw_json_text}).execute()
+        
+        st.session_state.turn_count_seula += 1
+        
+        # 🧠 [하이브리드 기억 알고리즘]
+        if st.session_state.turn_count_seula >= 10: 
+            with st.spinner("🌸 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_seula[-20:]])
-                    # 🛠️ [일기장 요약 불도저 엔진 투입!]
-                    summ_res = generate_with_retry(client, "gemini-2.5-flash", f"아래 최근 대화를 3줄로 요약해:\n{history_text}", None, 3)
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_seula.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
                     if len(st.session_state.mid_summaries_seula) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_seula)
-                        core_prompt = f"아래 일기장을 분석해서 임슬아가 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief_seula}\n[새로운 일기장]: {all_mids}"
-                        # 🛠️ [가치관 정리 불도저 엔진 투입!]
-                        core_res = generate_with_retry(client, "gemini-2.5-flash", core_prompt, None, 3)
+                        core_prompt = f"아래 일기장을 분석해서 임슬아가 유저({user_name})에게 가지는 핵심 가치관을 정리해. 반복되는 감정은 가중치를 주어 상단 배치.\n[기존 가치관]: {st.session_state.core_belief_seula}\n[새로운 일기장]: {all_mids}"
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
+                        st.session_state.core_belief_seula = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "core_belief", "message": core_res.text}).execute()
                         
                     st.session_state.turn_count_seula = 0 
-                except Exception:
+                except:
                     pass
-            st.rerun()
-            
-        except Exception as e:
-            st.toast(f"🚨 슬아 방 지연 감지 (재시도 초과): {str(e)}", icon="⚠️")
-
+        st.rerun()
 
 # =====================================================================
-# 👦 6. 김민국 채팅방 화면 (불도저 재시도 엔진 탑재)
+# 👦 6. 김민국 채팅방 화면 
 # =====================================================================
 elif st.session_state.page == "chat_minguk":
     user_name = st.session_state.user_name
@@ -954,45 +991,47 @@ elif st.session_state.page == "chat_minguk":
     if "turn_count_minguk" not in st.session_state:
         st.session_state.turn_count_minguk = 0
 
-    response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
-    db_history = list(reversed(response.data))
+    if "chat_history_minguk" not in st.session_state or "inventory_minguk" not in st.session_state or "affection_minguk" not in st.session_state:
+        response = supabase.table("chat_memory").select("*").eq("user_name", db_user_name).order("id", desc=True).limit(800).execute()
+        db_history = reversed(response.data)
 
-    temp_chat_history = []
-    st.session_state.inventory_minguk = [] 
-    st.session_state.mid_summaries_minguk = [] 
-    st.session_state.core_belief_minguk = "" 
-    st.session_state.affection_minguk = 0 
-    st.session_state.custom_persona_minguk = DEFAULT_MINGUK_PERSONA 
-    
-    for row in db_history:
-        if row["role"] == "inventory":
-            st.session_state.inventory_minguk.append(row["message"]) 
-        elif row["role"] == "mid_summary":
-            st.session_state.mid_summaries_minguk.append(row["message"])
-        elif row["role"] == "core_belief":
-            st.session_state.core_belief_minguk = row["message"]
-        elif row["role"] == "core_memory": 
-            if not st.session_state.core_belief_minguk: st.session_state.core_belief_minguk = row["message"]
-        elif row["role"] == "affection": 
-            st.session_state.affection_minguk = int(row["message"])
-        elif row["role"] == "persona_minguk":
-            st.session_state.custom_persona_minguk = row["message"]
-        elif row["role"] in ["user", "assistant"]:
-            temp_chat_history.append((row["role"], row["message"]))
+        temp_chat_history = []
+        st.session_state.inventory_minguk = [] 
+        st.session_state.mid_summaries_minguk = [] 
+        st.session_state.core_belief_minguk = "" 
+        st.session_state.affection_minguk = 0 
+        st.session_state.custom_persona_minguk = DEFAULT_MINGUK_PERSONA 
+        
+        for row in db_history:
+            if row["role"] == "inventory":
+                st.session_state.inventory_minguk.append(row["message"]) 
+            elif row["role"] == "mid_summary":
+                st.session_state.mid_summaries_minguk.append(row["message"])
+            elif row["role"] == "core_belief":
+                st.session_state.core_belief_minguk = row["message"]
+            elif row["role"] == "core_memory": 
+                if not st.session_state.core_belief_minguk: st.session_state.core_belief_minguk = row["message"]
+            elif row["role"] == "affection": 
+                st.session_state.affection_minguk = int(row["message"])
+            elif row["role"] == "persona_minguk":
+                st.session_state.custom_persona_minguk = row["message"]
+            elif row["role"] in ["user", "assistant"]:
+                temp_chat_history.append((row["role"], row["message"]))
 
-    st.session_state.chat_history_minguk = temp_chat_history
+        st.session_state.chat_history_minguk = temp_chat_history
 
-    if not st.session_state.chat_history_minguk:
-        first_msg = f'{{"장면": "기본", "행동": "주머니에 손을 넣고 널 툭 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "어 왔냐?"}}'
-        st.session_state.chat_history_minguk.append(("assistant", first_msg))
-        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
-        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
+        if not st.session_state.chat_history_minguk:
+            first_msg = f'{{"장면": "기본", "행동": "주머니에 손을 넣고 널 툭 쳐다본다", "호감도변화": 0, "획득아이템": "없음", "대사": "어 왔냐?"}}'
+            st.session_state.chat_history_minguk.append(("assistant", first_msg))
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": first_msg}).execute()
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": "0"}).execute()
 
     current_items = ", ".join(st.session_state.inventory_minguk) if st.session_state.inventory_minguk else "아직 받은 선물 없음"
+    # 🔥 파이 패치: 일기장 최대 20개까지만 로드
     recent_summaries = "\n".join(st.session_state.mid_summaries_minguk[-20:]) if st.session_state.mid_summaries_minguk else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_minguk if st.session_state.core_belief_minguk else "아직 뚜렷한 가치관이 형성되지 않음."
     affection_score = st.session_state.affection_minguk
-    current_custom_persona = st.session_state.custom_persona_minguk
+    current_custom_persona = st.session_state.get("custom_persona_minguk", DEFAULT_MINGUK_PERSONA)
     
     if affection_score > 70:
         tier_persona = "상태: [해바라기 모드]. 다른 남자를 만나면 심하게 질투해."
@@ -1041,6 +1080,7 @@ elif st.session_state.page == "chat_minguk":
                 st.markdown(text)
         else:
             try:
+                # 🔥 완벽한 치트키: 텍스트에서 괄호만 쏙 빼내는 로직
                 raw_json_text = text.strip()
                 start_idx = raw_json_text.find('{')
                 end_idx = raw_json_text.rfind('}') + 1
@@ -1052,11 +1092,10 @@ elif st.session_state.page == "chat_minguk":
                 data = json.loads(clean_json_text.strip())
                 
                 with st.chat_message("assistant", avatar="👦"):
-                    score_str = str(data.get('호감도변화', '0'))
-                    score = int(re.sub(r'[^0-9\-]', '', score_str) or 0)
+                    score = int(data.get('호감도변화', 0))
                     heart_icon = "💔" if score < 0 else "💖" if score > 0 else "🤍"
                     st.markdown(f"*(행동: {data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {score} {heart_icon}]**\n\n**「 {data.get('대사', '')} 」**")
-            except Exception:
+            except:
                 with st.chat_message("assistant", avatar="👦"):
                     st.markdown(text)
 
@@ -1119,20 +1158,31 @@ elif st.session_state.page == "chat_minguk":
                 if delete_confirm:
                     if st.button("✅ 영구 삭제 실행", use_container_width=True):
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).execute()
+                        st.session_state.pop("chat_history_minguk", None)
+                        st.session_state.pop("inventory_minguk", None)
+                        st.session_state.pop("mid_summaries_minguk", None)
+                        st.session_state.pop("core_belief_minguk", None)
+                        st.session_state.pop("affection_minguk", None)
                         st.rerun()
 
     if user_input := st.chat_input("민국이에게 메시지 보내기"):
+        st.toast('민국이가 당신의 말을 듣고 피식 웃습니다...', icon='👦')
+        
+        with st.chat_message("user"):
+            st.markdown(user_input)
+        st.session_state.chat_history_minguk.append(("user", user_input))
         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "user", "message": user_input}).execute()
-        st.rerun()
 
-    if st.session_state.chat_history_minguk and st.session_state.chat_history_minguk[-1][0] == "user":
+        raw_history = st.session_state.chat_history_minguk
         valid_history = []
         target_role = "user"
-        for r, t in reversed(st.session_state.chat_history_minguk):
+        for r, t in reversed(raw_history):
             if r == target_role:
                 valid_history.append((r, t))
                 target_role = "assistant" if target_role == "user" else "user"
         valid_history.reverse()
+        
+        # 🔥 파이 패치: 지능 극대화 (기존 20턴에서 80턴으로 확장!)
         valid_history = valid_history[-80:]
 
         contents = []
@@ -1142,20 +1192,17 @@ elif st.session_state.page == "chat_minguk":
 
         try:
             with st.spinner('👦 민국이가 반존대 섞인 답장을 고민 중입니다...'):
-                gen_config = types.GenerateContentConfig(
-                    system_instruction=minguk_persona,
-                    response_mime_type="application/json"
-                )
-                # 🛠️ [불도저 재시도 엔진 투입!]
-                response = generate_with_retry(
-                    client_obj=client,
-                    model_name="gemini-2.5-flash",
-                    contents_data=contents,
-                    config_data=gen_config,
-                    max_retries=3
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=contents,
+                    config={"system_instruction": minguk_persona, "response_mime_type": "application/json"}
                 )
             raw_json_text = response.text
-            
+        except Exception as e:
+            st.error("앗! 제미나이 AI 서버가 잠깐 숨을 고르고 있어요. 🚨")
+            st.stop()
+        
+        try:
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
@@ -1164,54 +1211,62 @@ elif st.session_state.page == "chat_minguk":
                 clean_json_text = raw_json_text
             
             parsed_data = json.loads(clean_json_text.strip())
-            
-            turn_score_str = str(parsed_data.get('호감도변화', '0'))
-            turn_score = int(re.sub(r'[^0-9\-]', '', turn_score_str) or 0)
-            
-            new_affection = st.session_state.affection_minguk + turn_score
+            turn_score = int(parsed_data.get('호감도변화', 0))
+            st.session_state.affection_minguk += turn_score
             supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "affection").execute()
-            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(new_affection)}).execute()
+            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "affection", "message": str(st.session_state.affection_minguk)}).execute()
 
             item_get = parsed_data.get('획득아이템', '없음')
             if item_get and item_get != "없음":
+                st.session_state.inventory_minguk.append(item_get)
                 supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": item_get}).execute()
+                st.toast(f'🎉 민국이가 [{item_get}]을(를) 보관함에 넣었습니다!', icon='🎁')
 
             item_use = parsed_data.get('사용아이템', '없음')
             if item_use and item_use != "없음" and item_use in st.session_state.inventory_minguk:
-                supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 st.session_state.inventory_minguk.remove(item_use)
+                supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "inventory").execute()
                 for inv_item in st.session_state.inventory_minguk:
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "inventory", "message": inv_item}).execute()
+                st.toast(f'✨ 민국이가 보관함에서 [{item_use}]을(를) 꺼내 사용했습니다!', icon='🪄')
 
-            supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": clean_json_text}).execute()
-            st.session_state.turn_count_minguk += 1
-            
-            if st.session_state.turn_count_minguk >= 10: 
+            with st.chat_message("assistant", avatar="👦"):
+                heart_icon = "💔" if turn_score < 0 else "💖" if turn_score > 0 else "🤍"
+                st.markdown(f"*(행동: {parsed_data.get('행동', '')})*\n\n**[이번 턴 호감도 증감: {turn_score} {heart_icon}]**\n\n**「 {parsed_data.get('대사', '')} 」**")
+        except:
+            with st.chat_message("assistant", avatar="👦"):
+                st.markdown(f"*(행동: 머리를 긁적이며 쳐다본다.)*\n\n**[이번 턴 호감도 증감: 0 🤍]**\n\n**「 어... 너 방금 뭐라고 했어? 딴생각하느라 못 들었네. 다시 말해봐. 」**")
+                
+        st.session_state.chat_history_minguk.append(("assistant", raw_json_text))
+        supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "assistant", "message": raw_json_text}).execute()
+        
+        st.session_state.turn_count_minguk += 1
+        
+        # 🧠 [하이브리드 기억 알고리즘]
+        if st.session_state.turn_count_minguk >= 10: 
+            with st.spinner("👦 당신과의 에피소드를 일기장에 기록 중입니다..."):
                 try:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만!
                     history_text = "\n".join([f"{r}: {t}" for r, t in st.session_state.chat_history_minguk[-20:]])
-                    # 🛠️ [일기장 요약 불도저 엔진 투입!]
-                    summ_res = generate_with_retry(client, "gemini-2.5-flash", f"아래 최근 대화를 3줄로 요약해:\n{history_text}", None, 3)
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 최근 대화를 3줄로 요약해:\n{history_text}")
                     st.session_state.mid_summaries_minguk.append(summ_res.text)
                     supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
                     if len(st.session_state.mid_summaries_minguk) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_minguk)
                         core_prompt = f"아래 일기장을 분석해서 김민국이 유저({user_name})에게 가지는 핵심 가치관을 정리해.\n[기존 가치관]: {st.session_state.core_belief_minguk}\n[새로운 일기장]: {all_mids}"
-                        # 🛠️ [가치관 정리 불도저 엔진 투입!]
-                        core_res = generate_with_retry(client, "gemini-2.5-flash", core_prompt, None, 3)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=core_prompt)
+                        st.session_state.core_belief_minguk = core_res.text
                         supabase.table("chat_memory").delete().eq("user_name", db_user_name).eq("role", "core_belief").execute()
                         supabase.table("chat_memory").insert({"user_name": db_user_name, "role": "core_belief", "message": core_res.text}).execute()
                         
                     st.session_state.turn_count_minguk = 0 
-                except Exception:
+                except:
                     pass
-            st.rerun()
-            
-        except Exception as e:
-            st.toast(f"🚨 민국이 방 지연 감지 (재시도 초과): {str(e)}", icon="⚠️")
+        st.rerun()
 
 # =====================================================================
-# 🌐 7. AI 멀티버스 실시간 단톡방 (자동 재시도 불도저 엔진 탑재)
+# 🌐 7. AI 멀티버스 실시간 단톡방 (버그 픽스 완료본!)
 # =====================================================================
 elif st.session_state.page == "chat_multi":
     user_name = st.session_state.user_name
@@ -1219,7 +1274,8 @@ elif st.session_state.page == "chat_multi":
     room_id = "_".join(members)
     db_room_name = f"{user_name}_{room_id}_multi"
 
-    count = st_autorefresh(interval=8000, key="multi_room_refresh")
+    # 🔥 8초마다 자동 새로고침 (유저 채팅 시간 충분히 확보)
+    st_autorefresh(interval=8000, key="multi_room_refresh")
 
     col1, col2 = st.columns([8, 2])
     with col1:
@@ -1238,6 +1294,7 @@ elif st.session_state.page == "chat_multi":
     response = supabase.table("chat_memory").select("*").eq("user_name", db_room_name).order("id", desc=True).limit(800).execute()
     db_history = list(reversed(response.data))
 
+    # 멀티방 기억 변수 불러오기
     st.session_state.mid_summaries_multi = []
     st.session_state.core_belief_multi = ""
     valid_chat_history = []
@@ -1257,7 +1314,7 @@ elif st.session_state.page == "chat_multi":
         st.rerun()
 
     history_text_for_ai = ""
-    # 파이의 핵심 룰: 80턴 절대 사수! AI의 지능은 타협하지 않는다.
+    # 🔥 파이 패치: 단톡방 대화 내역도 최근 80개로 확장해서 딥하게 읽어들이게 함!
     for row in valid_chat_history[-80:]: 
         role, msg = row["role"], row["message"]
         avatar = "😎" if role == "user" else "❄️" if role == "winter" else "🌸" if role == "seula" else "👦"
@@ -1267,31 +1324,22 @@ elif st.session_state.page == "chat_multi":
             st.markdown(f"**{name}**\n\n{msg}")
         history_text_for_ai += f"{name}: {msg}\n"
 
+    # 🔥 파이 패치: 멀티방 일기장 최대 20개 로드
     recent_summaries = "\n".join(st.session_state.mid_summaries_multi[-20:]) if st.session_state.mid_summaries_multi else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_multi if st.session_state.core_belief_multi else "아직 뚜렷한 관계성 형성되지 않음."
 
-    # 유저 입력 시 즉시 DB 선저장
-    if user_chat := st.chat_input("이들의 대화에 난입해보세요!"):
-        supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "user", "message": user_chat}).execute()
-        st.session_state.last_msg_time = time.time()
-        st.rerun()
-
+    # --- 🧠 AI 자동 개입 로직 ---
     current_time = time.time()
     time_diff = current_time - st.session_state.last_msg_time
-    
-    last_speaker = valid_chat_history[-1]["role"] if valid_chat_history else "none"
-    need_ai_response = False
-    
-    if last_speaker == "user":
-        need_ai_response = True
-    elif time_diff > 6.0 and count > 0:
-        need_ai_response = True
 
-    if need_ai_response:
+    if time_diff > 6.0:
         member_info = ""
         if "winter" in members: member_info += "[한겨울]: 까칠한 츤데레 여사친.\n"
         if "seula" in members: member_info += "[임슬아]: 여우 같은 연하녀, 벚꽃🌸 사용.\n"
         if "minguk" in members: member_info += "[김민국]: 능글맞은 남사친, 장난꾸러기.\n"
+
+        # 방금 마지막으로 말한 사람
+        last_speaker = valid_chat_history[-1]["role"] if valid_chat_history else "none"
 
         director_persona = f"""
         너는 '{room_title}' 단톡방의 흐름을 조율하는 감독관이야.
@@ -1304,49 +1352,24 @@ elif st.session_state.page == "chat_multi":
         {history_text_for_ai}
 
         [단톡방 절대 규칙]
-        1. 방금 파이(유저 '{user_name}')가 말을 걸었다면, **절대로 pass를 외치지 말고 무조건 한 명이 대답해!** 대답 안 하면 에러가 나.
-        2. 기계적인 억지 대화 금지! 파이가 가만히 지켜만 보고 있는데 AI끼리 할 말이 떨어졌다면 그제서야 "pass"를 외쳐.
-        3. 방금 마지막으로 말한 AI(현재 '{last_speaker}')가 또다시 연속으로 대답하지 않게 조율해.
-        4. 대사는 카톡 단톡방처럼 짧고 현실적으로 작성할 것.
+        1. 파이가 가만히 지켜만 보는데 너희들끼리 계속 떠들지 마! 대화가 끊기고 정적이 흐르면 무조건 스피커를 "pass"로 설정해.
+        2. 방금 마지막으로 말한 사람('{last_speaker}')이 연속으로 두 번 대답하게 하지 마! 
+        3. 만약 최근 대화의 마지막 메시지가 유저('{user_name}')의 채팅이라면, 하던 대화를 멈추고 무조건 유저의 말에 최우선으로 반응해.
 
-        반드시 아래 JSON 형식으로만 대답해. 부가 설명 금지.
+        응답 형식(JSON):
         {{
             "speaker": "{ ' 또는 '.join(members) } 또는 pass",
             "message": "대사 내용 (pass일 경우 비워둠)"
         }}
         """
-        
-        # 🛠️ [자동 재시도 로직 1] 메인 디렉터 AI 호출 (최대 3회 맷집)
-        max_retries = 3
-        director_success = False
-        raw_json_text = ""
-        
-        for attempt in range(max_retries):
-            try:
-                with st.spinner('단톡방 멤버들이 메시지 입력 중...'):
-                    gen_config = types.GenerateContentConfig(response_mime_type="application/json")
-                    res = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=director_persona,
-                        config=gen_config
-                    )
-                raw_json_text = res.text.strip()
-                director_success = True
-                break  # 성공하면 즉시 루프 탈출
-            except Exception as e:
-                err_str = str(e)
-                if "403" in err_str or "404" in err_str:
-                    st.toast(f"🚨 치명적 에러 발생. 재시도 불가: {err_str}", icon="🛑")
-                    break  # 보안/버전 에러는 재시도해도 안 되므로 즉시 중단
-                
-                if attempt < max_retries - 1:
-                    st.toast(f"⚠️ 구글 서버 지연 감지! {attempt + 1}번째 재시도 들어갑니다...", icon="⏳")
-                    time.sleep(1.5 * (attempt + 1))  # 1.5초, 3초 순으로 대기하며 집요하게 재요청
-                else:
-                    st.toast("🚨 구글 서버가 너무 바빠서 대답을 못 가져왔어요. 다음 턴을 기다립니다!", icon="⚠️")
-        
-        # 재시도 끝에 성공했을 경우에만 파싱 및 DB 저장 진행
-        if director_success and raw_json_text:
+        try:
+            res = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=director_persona,
+                config={"response_mime_type": "application/json"}
+            )
+            # 🔥 완벽한 치트키
+            raw_json_text = res.text.strip()
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
@@ -1355,40 +1378,33 @@ elif st.session_state.page == "chat_multi":
                 clean_json_text = raw_json_text
             
             parsed = json.loads(clean_json_text.strip())
-            
             if parsed.get("speaker") in members and parsed.get("message") and parsed.get("speaker") != "pass":
                 supabase.table("chat_memory").insert({"user_name": db_room_name, "role": parsed["speaker"], "message": parsed["message"]}).execute()
                 st.session_state.last_msg_time = time.time()
                 st.session_state.multi_turn_count += 1
                 
-                # 10턴 도달 시 일기장 요약 시작
+                # 🧠 [멀티방 기억 요약 로직 추가]
                 if st.session_state.multi_turn_count >= 10:
+                    # 🔥 요약은 무조건 최근 10턴(20개)만 잘라서 진행!
                     hist_for_sum = "\n".join([f"{r['role']}: {r['message']}" for r in valid_chat_history[-20:]])
+                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
+                    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
-                    # 🛠️ [자동 재시도 로직 2] 일기장 압축 요약
-                    for sum_attempt in range(max_retries):
-                        try:
-                            summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
-                            supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
-                            st.session_state.mid_summaries_multi.append(summ_res.text)
-                            break
-                        except Exception:
-                            time.sleep(1.5)
-                    
-                    # 일기장이 3개 쌓일 때마다 핵심 가치관 갱신
-                    if len(st.session_state.mid_summaries_multi) % 3 == 0 and len(st.session_state.mid_summaries_multi) != 0:
+                    if len(st.session_state.mid_summaries_multi) % 3 == 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_multi)
-                        
-                        # 🛠️ [자동 재시도 로직 3] 핵심 관계성 (장기기억) 업데이트
-                        for core_attempt in range(max_retries):
-                            try:
-                                core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
-                                supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
-                                supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
-                                break
-                            except Exception:
-                                time.sleep(1.5)
+                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
+                        supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
+                        supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
                     
                     st.session_state.multi_turn_count = 0
                 
                 st.rerun()
+        except:
+            pass
+
+    # --- ✍️ 유저 입력창 ---
+    if user_chat := st.chat_input("이들의 대화에 난입해보세요!"):
+        supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "user", "message": user_chat}).execute()
+        st.session_state.last_msg_time = time.time()
+        st.session_state.multi_turn_count += 1
+        st.rerun()
