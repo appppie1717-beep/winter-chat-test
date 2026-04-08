@@ -1182,7 +1182,7 @@ elif st.session_state.page == "chat_minguk":
 
 
 # =====================================================================
-# 🌐 7. AI 멀티버스 실시간 단톡방 (침묵 버그 완전 해결!)
+# 🌐 7. AI 멀티버스 실시간 단톡방 (자동 재시도 불도저 엔진 탑재)
 # =====================================================================
 elif st.session_state.page == "chat_multi":
     user_name = st.session_state.user_name
@@ -1228,6 +1228,7 @@ elif st.session_state.page == "chat_multi":
         st.rerun()
 
     history_text_for_ai = ""
+    # 파이의 핵심 룰: 80턴 절대 사수! AI의 지능은 타협하지 않는다.
     for row in valid_chat_history[-80:]: 
         role, msg = row["role"], row["message"]
         avatar = "😎" if role == "user" else "❄️" if role == "winter" else "🌸" if role == "seula" else "👦"
@@ -1240,6 +1241,7 @@ elif st.session_state.page == "chat_multi":
     recent_summaries = "\n".join(st.session_state.mid_summaries_multi[-20:]) if st.session_state.mid_summaries_multi else "아직 기록된 일기장 없음."
     core_belief = st.session_state.core_belief_multi if st.session_state.core_belief_multi else "아직 뚜렷한 관계성 형성되지 않음."
 
+    # 유저 입력 시 즉시 DB 선저장
     if user_chat := st.chat_input("이들의 대화에 난입해보세요!"):
         supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "user", "message": user_chat}).execute()
         st.session_state.last_msg_time = time.time()
@@ -1285,18 +1287,37 @@ elif st.session_state.page == "chat_multi":
         }}
         """
         
-        try:
-            with st.spinner('단톡방 멤버들이 메시지 입력 중...'):
-                gen_config = types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
-                res = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=director_persona,
-                    config=gen_config
-                )
-            
-            raw_json_text = res.text.strip()
+        # 🛠️ [자동 재시도 로직 1] 메인 디렉터 AI 호출 (최대 3회 맷집)
+        max_retries = 3
+        director_success = False
+        raw_json_text = ""
+        
+        for attempt in range(max_retries):
+            try:
+                with st.spinner('단톡방 멤버들이 메시지 입력 중...'):
+                    gen_config = types.GenerateContentConfig(response_mime_type="application/json")
+                    res = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=director_persona,
+                        config=gen_config
+                    )
+                raw_json_text = res.text.strip()
+                director_success = True
+                break  # 성공하면 즉시 루프 탈출
+            except Exception as e:
+                err_str = str(e)
+                if "403" in err_str or "404" in err_str:
+                    st.toast(f"🚨 치명적 에러 발생. 재시도 불가: {err_str}", icon="🛑")
+                    break  # 보안/버전 에러는 재시도해도 안 되므로 즉시 중단
+                
+                if attempt < max_retries - 1:
+                    st.toast(f"⚠️ 구글 서버 지연 감지! {attempt + 1}번째 재시도 들어갑니다...", icon="⏳")
+                    time.sleep(1.5 * (attempt + 1))  # 1.5초, 3초 순으로 대기하며 집요하게 재요청
+                else:
+                    st.toast("🚨 구글 서버가 너무 바빠서 대답을 못 가져왔어요. 다음 턴을 기다립니다!", icon="⚠️")
+        
+        # 재시도 끝에 성공했을 경우에만 파싱 및 DB 저장 진행
+        if director_success and raw_json_text:
             start_idx = raw_json_text.find('{')
             end_idx = raw_json_text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
@@ -1311,20 +1332,34 @@ elif st.session_state.page == "chat_multi":
                 st.session_state.last_msg_time = time.time()
                 st.session_state.multi_turn_count += 1
                 
+                # 10턴 도달 시 일기장 요약 시작
                 if st.session_state.multi_turn_count >= 10:
                     hist_for_sum = "\n".join([f"{r['role']}: {r['message']}" for r in valid_chat_history[-20:]])
-                    summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
-                    supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
                     
-                    if len(st.session_state.mid_summaries_multi) % 3 == 0:
+                    # 🛠️ [자동 재시도 로직 2] 일기장 압축 요약
+                    for sum_attempt in range(max_retries):
+                        try:
+                            summ_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"이 단톡방 대화를 3줄 요약해:\n{hist_for_sum}")
+                            supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "mid_summary", "message": summ_res.text}).execute()
+                            st.session_state.mid_summaries_multi.append(summ_res.text)
+                            break
+                        except Exception:
+                            time.sleep(1.5)
+                    
+                    # 일기장이 3개 쌓일 때마다 핵심 가치관 갱신
+                    if len(st.session_state.mid_summaries_multi) % 3 == 0 and len(st.session_state.mid_summaries_multi) != 0:
                         all_mids = "\n".join(st.session_state.mid_summaries_multi)
-                        core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
-                        supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
-                        supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
+                        
+                        # 🛠️ [자동 재시도 로직 3] 핵심 관계성 (장기기억) 업데이트
+                        for core_attempt in range(max_retries):
+                            try:
+                                core_res = client.models.generate_content(model="gemini-2.5-flash", contents=f"아래 단톡방 일기장을 분석해 이들의 핵심 관계성을 정리해.\n[기존 관계성]:{core_belief}\n[일기장]:{all_mids}")
+                                supabase.table("chat_memory").delete().eq("user_name", db_room_name).eq("role", "core_belief").execute()
+                                supabase.table("chat_memory").insert({"user_name": db_room_name, "role": "core_belief", "message": core_res.text}).execute()
+                                break
+                            except Exception:
+                                time.sleep(1.5)
                     
                     st.session_state.multi_turn_count = 0
                 
                 st.rerun()
-        # 🔥 파이 패치: 에러 숨기지 않기 (디버깅용)
-        except Exception as e:
-            st.toast(f"🚨 단톡방 엔진 멈춤 원인: {str(e)}", icon="⚠️")
