@@ -110,9 +110,9 @@ scene_images = {
     "키스": "[https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true](https://github.com/appppie1717-beep/winter-chat/blob/main/%ED%82%A4%EC%8A%A4%ED%95%98%EB%8A%94%EC%A4%91(%EB%82%A8%EC%9E%90%20%EC%96%BC%EA%B5%B4%20%EB%B0%98%EC%AF%A4%20%EB%82%98%EC%98%B4.png?raw=true)"
 }
 
-api_key = st.secrets["GOOGLE_API_KEY"]
-supabase_url = st.secrets["SUPABASE_URL"]
-supabase_key = st.secrets["SUPABASE_KEY"]
+GOOGLE_API_KEY = "AIzaSyAs1SMK40FXjseZ2F7HznDEYjhrAc2y8tA"
+SUPABASE_URL = "https://gwhewwzzxhhmvjdulngx.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3aGV3d3p6eGhobXZqZHVsbmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NTY3MDMsImV4cCI6MjA5MDMzMjcwM30.zRX5BxQeUi2-zDGwEO_tHoz5XvwZVUrtcvywdKRB_74"
 
 supabase: Client = create_client(supabase_url, supabase_key)
 client = genai.Client(api_key=api_key)
