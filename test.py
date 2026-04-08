@@ -8,6 +8,34 @@ from supabase import create_client, Client
 from streamlit_autorefresh import st_autorefresh
 
 # =====================================================================
+# 🛠️ [파이 패치] 자동 재시도(Auto-Retry) 불도저 함수 (엔진 본체)
+# 제미나이 서버가 503 에러로 튕겨내도 최대 3번까지 멱살 잡고 다시 요청함
+# =====================================================================
+def generate_with_retry(client_obj, model_name, contents_data, config_data, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return client_obj.models.generate_content(
+                model=model_name,
+                contents=contents_data,
+                config=config_data
+            )
+        except Exception as e:
+            err_str = str(e)
+            if attempt < max_retries - 1:
+                # 403(키 유출), 404(모델 없음) 같은 치명적 에러가 아니면 무조건 재시도
+                if "403" not in err_str and "404" not in err_str:
+                    time.sleep(1.5 * (attempt + 1)) # 1.5초, 3초 대기하며 재시도
+                    continue
+            # 끝까지 실패하거나 치명적 에러면 그대로 에러 뱉기
+            raise e
+
+# =====================================================================
+# 1. 페이지 설정 및 초기화
+# =====================================================================
+st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
+
+# ... (이하 기존 코드 그대로 유지) ...
+# =====================================================================
 # 1. 페이지 설정 및 초기화
 # =====================================================================
 st.set_page_config(page_title="파이의 AI 멀티버스", page_icon="📱", layout="centered")
